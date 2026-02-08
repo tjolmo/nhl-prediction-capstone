@@ -24,3 +24,9 @@ async def get_team_by_id(db: AsyncSession, team_id: int) -> Team | None:
     result = await db.execute(select(Team).where(Team.id == team_id))
     team = result.scalar_one_or_none()
     return team
+
+async def get_team_tricode_from_id(db: AsyncSession, team_id: int) -> str | None:
+    """Fetches team tri code from db by ID."""
+    result = await db.execute(select(Team.tri_code).where(Team.id == team_id))
+    tri_code = result.scalar_one_or_none()
+    return tri_code

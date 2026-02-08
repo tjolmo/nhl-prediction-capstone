@@ -8,3 +8,12 @@ class TeamInfoOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+class TeamRosterAddOut(BaseModel):
+    team_id: int
+    season: str
+    roster_added: bool
+    num_players_added: int
+
+    class Config:
+        from_attributes = True
