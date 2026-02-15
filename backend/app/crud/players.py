@@ -12,7 +12,7 @@ async def upsert_scraped_player(db: AsyncSession, player_data: PlayerResponse, t
     stmt = stmt.on_conflict_do_update(
         index_elements=['id'],
         set_={
-            "current_team_tri_code": func.coalesce(stmt.excluded.current_team_id, Player.current_team_tri_code),
+            "current_team_tri_code": func.coalesce(stmt.excluded.current_team_tri_code, Player.current_team_tri_code),
             "headshot": stmt.excluded.headshot,
             "first_name": stmt.excluded.first_name,
             "last_name": stmt.excluded.last_name,

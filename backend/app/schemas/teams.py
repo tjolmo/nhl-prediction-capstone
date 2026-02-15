@@ -10,7 +10,7 @@ class TeamInfoOut(BaseModel):
         from_attributes = True
 
 class TeamRosterAddOut(BaseModel):
-    team_id: int
+    team: str
     season: str
     roster_added: bool
     num_players_added: int
