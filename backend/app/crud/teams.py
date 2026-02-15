@@ -9,11 +9,10 @@ async def upsert_team(db: AsyncSession, team_data: TeamResponse):
     data = team_data.model_dump()
     stmt = insert(Team).values(**data)
     stmt = stmt.on_conflict_do_update(
-        index_elements=['id'],
+        index_elements=['tri_code'],
         set_={
             "franchise_id": stmt.excluded.franchise_id,
-            "name": stmt.excluded.name,
-            "tri_code": stmt.excluded.tri_code,
+            "current_name": stmt.excluded.current_name,
         }
     )
     await db.execute(stmt)

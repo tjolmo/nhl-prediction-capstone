@@ -4,15 +4,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ..models import Player
 from external.response_models import PlayerResponse
 
-async def upsert_scraped_player(db: AsyncSession, player_data: PlayerResponse, team_id: int | None = None):
+async def upsert_scraped_player(db: AsyncSession, player_data: PlayerResponse, tri_code: str | None = None):
     """Upserts scraped player into local db Players table."""
     data = player_data.model_dump()
-    data["current_team_id"] = team_id
+    data["current_team_tri_code"] = tri_code
     stmt = insert(Player).values(**data)
     stmt = stmt.on_conflict_do_update(
         index_elements=['id'],
         set_={
-            "current_team_id": func.coalesce(stmt.excluded.current_team_id, Player.current_team_id),
+            "current_team_tri_code": func.coalesce(stmt.excluded.current_team_id, Player.current_team_tri_code),
             "headshot": stmt.excluded.headshot,
             "first_name": stmt.excluded.first_name,
             "last_name": stmt.excluded.last_name,

@@ -1,7 +1,7 @@
 import httpx
-from .response_models import TeamResponse, PlayerResponse
+from .response_models import TeamResponse, PlayerResponse, TeamHistoryResponse
 
-async def fetch_and_clean_team(team_id: int) -> TeamResponse | None:
+async def fetch_and_clean_team(team_id: int) -> tuple[TeamResponse, TeamHistoryResponse] | None:
     """Scrapes team data from API, cleans, returns"""
     base_url = f"https://api.nhle.com/stats/rest/en/team/id/{team_id}"
     async with httpx.AsyncClient() as client:
@@ -10,7 +10,7 @@ async def fetch_and_clean_team(team_id: int) -> TeamResponse | None:
             response.raise_for_status()
             data = response.json().get("data")
             if data and len(data) > 0:
-                return TeamResponse(**data[0])
+                return (TeamResponse(**data[0]), TeamHistoryResponse(**data[0]))
             return None
         except Exception as e:
             print(f"Error scraping ID {team_id}: {e}")
