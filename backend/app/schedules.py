@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from external.teams import fetch_and_clean_team
-from .crud.team_history import upsert_team_history, check_team_history_exists
+from .crud.team_history import upsert_team_history, check_team_history_exists_and_updated
 from .crud.teams import upsert_team
 CURRENT_TEAMS = [
         8, 7, 2, 28, 13, 12, 54, 52, 
@@ -12,7 +12,7 @@ OLD_TEAMS = [59] #uhc
 
 async def add_current_teams_to_db(db: AsyncSession):
     for team_id in CURRENT_TEAMS:
-        if not await check_team_history_exists(db, team_id):
+        if not await check_team_history_exists_and_updated(db, team_id):
             team_data, team_history_data = await fetch_and_clean_team(team_id)
             if team_data and team_history_data:
                 await upsert_team(db, team_data)
@@ -22,7 +22,7 @@ async def add_current_teams_to_db(db: AsyncSession):
 
 async def add_old_teams_to_db(db: AsyncSession):
     for team_id in OLD_TEAMS:
-        if not await check_team_history_exists(db, team_id):
+        if not await check_team_history_exists_and_updated(db, team_id):
             _, team_history_data = await fetch_and_clean_team(team_id)
             if team_history_data:
                 await upsert_team_history(db, team_history_data)

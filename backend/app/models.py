@@ -18,6 +18,7 @@ class TeamHistory(Base):
     name: Mapped[str] = mapped_column(nullable=False)
     tri_code: Mapped[str] = mapped_column(ForeignKey("teams.tri_code"), nullable=False)
     team: Mapped["Team"] = relationship("Team", back_populates="team_ids")
+    last_updated: Mapped[datetime.datetime] = mapped_column(nullable=False, default=datetime.datetime.now, onupdate=datetime.datetime.now)
 
 class Player(Base):
     __tablename__ = "players"

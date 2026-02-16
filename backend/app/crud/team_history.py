@@ -3,6 +3,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from ..models import TeamHistory
 from external.response_models import TeamHistoryResponse
+import datetime
 
 async def upsert_team_history(db: AsyncSession, team_history_data: TeamHistoryResponse):
     """Upserts scraped team history data into local db TeamHistory table."""
@@ -18,8 +19,12 @@ async def upsert_team_history(db: AsyncSession, team_history_data: TeamHistoryRe
     await db.execute(stmt)
     await db.commit()
 
-async def check_team_history_exists(db: AsyncSession, team_id: int) -> bool:
+async def check_team_history_exists_and_updated(db: AsyncSession, team_id: int) -> bool:
     """Checks if team history with the given team ID exists in the database."""
     result = await db.execute(select(TeamHistory).where(TeamHistory.id == team_id))
     team_history = result.scalar_one_or_none()
-    return team_history is not None
+    if team_history:
+        # If the team history exists, check if it was updated in the last day
+        if team_history.last_updated and (datetime.datetime.now() - team_history.last_updated).days < 1:
+            return True
+    return False
