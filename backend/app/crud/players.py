@@ -1,5 +1,5 @@
 from sqlalchemy.dialects.postgresql import insert
-from sqlalchemy import select, func
+from sqlalchemy import select, func, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from ..models import Player
 from external.nhl.response_models import PlayerResponse
@@ -29,3 +29,13 @@ async def get_player_by_id(db: AsyncSession, player_id: int) -> Player | None:
     result = await db.execute(select(Player).where(Player.id == player_id))
     player = result.scalar_one_or_none()
     return player
+
+async def update_player_game_log_last_updated(db: AsyncSession, player_id: int):
+    """Updates the game_log_last_updated field for a player."""
+    stmt = (
+        update(Player).
+        where(Player.id == player_id).
+        values(game_log_last_updated=func.now())
+    )
+    await db.execute(stmt)
+    await db.commit()

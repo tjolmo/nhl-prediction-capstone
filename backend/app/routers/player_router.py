@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from app.dependencies import get_db
 from app.schemas.player import PlayerGameLogAddOut, PlayerGameLogGetOut
-from app.crud.players import get_player_by_id
+from app.crud.players import get_player_by_id, update_player_game_log_last_updated
 from app.crud.skater_game_logs import upsert_scraped_game_log, get_player_game_log_by_game_and_player_id
 from external.moneypuck.player import scrape_skater_game_data
 
@@ -19,6 +19,7 @@ async def add_player_game_logs(player_id: int, db = Depends(get_db)):
         for game_log in game_logs:
             await upsert_scraped_game_log(db, game_log)
             num_game_logs_added += 1
+        await update_player_game_log_last_updated(db, player_id)
         return PlayerGameLogAddOut(player_id=player_id, game_logs_added=num_game_logs_added)
     raise HTTPException(status_code=404, detail=f"Game logs for player {player_id} not found in external API")
 

@@ -34,6 +34,8 @@ class Player(Base):
     shoots_catches: Mapped[str] = mapped_column(nullable=True)
     current_team: Mapped["Team"] = relationship("Team", back_populates="current_players")
     last_updated: Mapped[datetime.datetime] = mapped_column(nullable=False, default=datetime.datetime.now, onupdate=datetime.datetime.now)
+    game_logs: Mapped[list["SkaterGameLog"]] = relationship("SkaterGameLog", back_populates="player")
+    game_log_last_updated: Mapped[datetime.datetime] = mapped_column(nullable=True)
 
 class SkaterGameLog(Base):
     __tablename__ = "skater_game_logs"
@@ -56,3 +58,4 @@ class SkaterGameLog(Base):
     on_ice_x_goals_percentage: Mapped[float] = mapped_column(nullable=False)
     game_score: Mapped[float] = mapped_column(nullable=False)
     last_updated: Mapped[datetime.datetime] = mapped_column(nullable=False, default=datetime.datetime.now, onupdate=datetime.datetime.now)
+    player: Mapped["Player"] = relationship("Player", back_populates="game_logs")
