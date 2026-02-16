@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from external.nhl.teams import fetch_and_clean_team, fetch_and_clean_team_roster
 from .crud.team_history import upsert_team_history, check_team_history_exists_and_updated
-from .crud.teams import upsert_team, get_all_tri_codes_update_roster
+from .crud.teams import upsert_team, get_all_tri_codes_update_roster, update_team_roster_last_updated
 from .crud.players import upsert_scraped_player
 CURRENT_TEAMS = [
         8, 7, 2, 28, 13, 12, 54, 52, 
@@ -37,4 +37,5 @@ async def fetch_current_rosters_for_all_teams(db: AsyncSession):
         if roster_data:
             for player in roster_data:
                 await upsert_scraped_player(db, player, tri_code)
+            await update_team_roster_last_updated(db, tri_code)
         

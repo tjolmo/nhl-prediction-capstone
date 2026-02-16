@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from app.dependencies import get_db
 from external.nhl.teams import fetch_and_clean_team, fetch_and_clean_team_roster
-from app.crud.teams import upsert_team, get_team_by_id, check_tri_code_exists
+from app.crud.teams import upsert_team, get_team_by_id, check_tri_code_exists, update_team_roster_last_updated
 from app.crud.team_history import upsert_team_history
 from app.schemas.teams import TeamInfoOut, TeamRosterAddOut
 from app.crud.players import upsert_scraped_player
@@ -29,7 +29,6 @@ async def get_stored_team_data(team_id: int, db = Depends(get_db)):
 
 @router.post("/add/roster/{tri_code}/{season}", status_code=200, response_model=TeamRosterAddOut)
 async def add_team_roster(tri_code: str, season: str, db = Depends(get_db)):
-    
     if not await check_tri_code_exists(db, tri_code):
         raise HTTPException(status_code=404, detail=f"Team {tri_code} not found in DB")
     roster_data = await fetch_and_clean_team_roster(tri_code, season)
@@ -41,5 +40,6 @@ async def add_team_roster(tri_code: str, season: str, db = Depends(get_db)):
             else:
                 await upsert_scraped_player(db, player)
             num_players_added += 1
+        await update_team_roster_last_updated(db, tri_code)
         return TeamRosterAddOut(team=tri_code, season=season, roster_added=True, num_players_added=num_players_added)
     raise HTTPException(status_code=404, detail=f"Roster for Team {tri_code} Season {season} not found in external API")

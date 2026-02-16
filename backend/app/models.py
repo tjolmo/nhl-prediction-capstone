@@ -11,6 +11,7 @@ class Team(Base):
     current_players: Mapped[list["Player"]] = relationship("Player", back_populates="current_team")
     team_ids: Mapped[list[int]] = relationship("TeamHistory", back_populates="team")
     last_updated: Mapped[datetime.datetime] = mapped_column(nullable=False, default=datetime.datetime.now, onupdate=datetime.datetime.now)
+    roster_last_updated: Mapped[datetime.datetime] = mapped_column(nullable=True)
 
 class TeamHistory(Base):
     __tablename__ = "team_history"

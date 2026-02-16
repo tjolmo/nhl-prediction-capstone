@@ -1,5 +1,5 @@
 from sqlalchemy.dialects.postgresql import insert
-from sqlalchemy import select, or_
+from sqlalchemy import select, or_, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from ..models import Team
 from external.nhl.response_models import TeamResponse
@@ -36,10 +36,20 @@ async def get_all_tri_codes_update_roster(db: AsyncSession) -> list[str]:
     result = await db.execute(
         select(Team.tri_code).where(
             or_(
-                Team.last_updated.is_(None),
-                Team.last_updated < datetime.datetime.now() - datetime.timedelta(days=1)
+                Team.roster_last_updated.is_(None),
+                Team.roster_last_updated < datetime.datetime.now() - datetime.timedelta(days=1)
             )
         )
     )
     tri_codes = result.scalars().all()
     return tri_codes
+
+async def update_team_roster_last_updated(db: AsyncSession, tri_code: str):
+    """Updates the roster_last_updated field for a team."""
+    stmt = (
+        update(Team).
+        where(Team.tri_code == tri_code).
+        values(roster_last_updated=datetime.datetime.now())
+    )
+    await db.execute(stmt)
+    await db.commit()
