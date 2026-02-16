@@ -39,10 +39,11 @@ class SkaterGameLog(Base):
     # composite primary key of game_id and player_id
     game_id: Mapped[int] = mapped_column(primary_key=True)
     player_id: Mapped[int] = mapped_column(ForeignKey("players.id"), primary_key=True)
+    name: Mapped[str] = mapped_column(nullable=False)
     season: Mapped[int] = mapped_column(nullable=False)
     player_team_tricode: Mapped[str] = mapped_column(ForeignKey("teams.tri_code"), nullable=False)
     opposing_team_tricode: Mapped[str] = mapped_column(ForeignKey("teams.tri_code"), nullable=False)
-    game_date: Mapped[str] = mapped_column(nullable=False)
+    game_date: Mapped[int] = mapped_column(nullable=False)
     goals: Mapped[int] = mapped_column(nullable=False)
     primary_assists: Mapped[int] = mapped_column(nullable=False)
     secondary_assists: Mapped[int] = mapped_column(nullable=False)

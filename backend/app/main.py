@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from .database import engine
-from .routers import teams_router
+from .routers import teams_router, player_router
 from .database import AsyncSessionLocal
 from .schedules import add_current_teams_to_db, add_old_teams_to_db, fetch_current_rosters_for_all_teams
 
@@ -22,6 +22,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 app.include_router(teams_router.router)
+app.include_router(player_router.router)
 
 @app.get("/")
 async def test():
