@@ -1,8 +1,9 @@
 from sqlalchemy.dialects.postgresql import insert
-from sqlalchemy import select
+from sqlalchemy import select, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from ..models import Team
 from external.response_models import TeamResponse
+import datetime
 
 async def upsert_team(db: AsyncSession, team_data: TeamResponse):
     """Upserts scraped team into local db Teams table."""
@@ -29,3 +30,16 @@ async def check_tri_code_exists(db: AsyncSession, tri_code: str) -> bool:
     result = await db.execute(select(Team).where(Team.tri_code == tri_code))
     team = result.scalar_one_or_none()
     return team is not None
+
+async def get_all_tri_codes_update_roster(db: AsyncSession) -> list[str]:
+    """Fetches all team tri codes from the database where last updated more than a day ago."""
+    result = await db.execute(
+        select(Team.tri_code).where(
+            or_(
+                Team.last_updated.is_(None),
+                Team.last_updated < datetime.datetime.now() - datetime.timedelta(days=1)
+            )
+        )
+    )
+    tri_codes = result.scalars().all()
+    return tri_codes
