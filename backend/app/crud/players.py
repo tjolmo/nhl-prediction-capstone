@@ -2,7 +2,7 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from ..models import Player
-from external.response_models import PlayerResponse
+from external.nhl.response_models import PlayerResponse
 
 async def upsert_scraped_player(db: AsyncSession, player_data: PlayerResponse, tri_code: str | None = None):
     """Upserts scraped player into local db Players table."""

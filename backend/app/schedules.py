@@ -1,9 +1,8 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from external.teams import fetch_and_clean_team
+from external.nhl.teams import fetch_and_clean_team, fetch_and_clean_team_roster
 from .crud.team_history import upsert_team_history, check_team_history_exists_and_updated
 from .crud.teams import upsert_team, get_all_tri_codes_update_roster
 from .crud.players import upsert_scraped_player
-from external.teams import fetch_and_clean_team_roster
 CURRENT_TEAMS = [
         8, 7, 2, 28, 13, 12, 54, 52, 
         18, 1, 9, 21, 15, 26, 10, 22,

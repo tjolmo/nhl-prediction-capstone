@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from app.dependencies import get_db
-from external.teams import fetch_and_clean_team, fetch_and_clean_team_roster
+from external.nhl.teams import fetch_and_clean_team, fetch_and_clean_team_roster
 from app.crud.teams import upsert_team, get_team_by_id, check_tri_code_exists
 from app.crud.team_history import upsert_team_history
 from app.schemas.teams import TeamInfoOut, TeamRosterAddOut

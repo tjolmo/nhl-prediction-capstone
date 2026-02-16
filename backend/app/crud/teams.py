@@ -2,7 +2,7 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy import select, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from ..models import Team
-from external.response_models import TeamResponse
+from external.nhl.response_models import TeamResponse
 import datetime
 
 async def upsert_team(db: AsyncSession, team_data: TeamResponse):
