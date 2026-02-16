@@ -4,8 +4,8 @@ from .response_models import SkaterGameLogResponse
 def scrape_skater_game_data(player_id: int) -> list[SkaterGameLogResponse] | None:
     csv_url = f"https://moneypuck.com/moneypuck/playerData/careers/gameByGame/regular/skaters/{player_id}.csv"
     cols= [
-        'playerId', 'season', 'name', 'gameId', 'playerTeam', 
-        'opposingTeam', 'gameDate', 'situation',
+        'playerId', 'season', 'name', 'gameId', 'home_or_away',
+        'playerTeam', 'opposingTeam', 'gameDate', 'situation',
         'I_F_goals', 'I_F_primaryAssists', 'I_F_secondaryAssists', 'I_F_points',
         'I_F_xGoals', 'icetime', 'I_F_highDangerShots', 
         'I_F_shotAttempts', 'onIce_xGoalsPercentage', 'gameScore'

@@ -12,6 +12,7 @@ class PlayerGameLogGetOut(BaseModel):
     player_id: int
     season: int
     name: str
+    home_away: str
     player_team_tricode: str
     opposing_team_tricode: str
     game_date: int

@@ -5,6 +5,7 @@ class SkaterGameLogResponse(BaseModel):
     player_id: int = Field(alias="playerId")
     season: int = Field(alias="season")
     name: str = Field (alias="name")
+    home_away: str = Field(alias="home_or_away")
     player_team_tricode: str = Field(alias="playerTeam")
     opposing_team_tricode: str = Field(alias="opposingTeam")
     game_date: int = Field(alias="gameDate")

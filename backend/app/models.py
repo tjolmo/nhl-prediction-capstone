@@ -44,6 +44,7 @@ class SkaterGameLog(Base):
     player_id: Mapped[int] = mapped_column(ForeignKey("players.id"), primary_key=True)
     name: Mapped[str] = mapped_column(nullable=False)
     season: Mapped[int] = mapped_column(nullable=False)
+    home_away: Mapped[str] = mapped_column(nullable=True)
     player_team_tricode: Mapped[str] = mapped_column(ForeignKey("teams.tri_code"), nullable=False)
     opposing_team_tricode: Mapped[str] = mapped_column(ForeignKey("teams.tri_code"), nullable=False)
     game_date: Mapped[int] = mapped_column(nullable=False)

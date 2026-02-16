@@ -13,6 +13,7 @@ async def upsert_scraped_game_log(db: AsyncSession, game_log_data: SkaterGameLog
         set_={
             "name": stmt.excluded.name,
             "season": stmt.excluded.season,
+            "home_away": stmt.excluded.home_away,
             "player_team_tricode": stmt.excluded.player_team_tricode,
             "opposing_team_tricode": stmt.excluded.opposing_team_tricode,
             "game_date": stmt.excluded.game_date,
