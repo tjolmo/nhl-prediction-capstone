@@ -1,4 +1,5 @@
 from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from ..models import SkaterGameLog
 from external.moneypuck.response_models import SkaterGameLogResponse
@@ -29,3 +30,14 @@ async def upsert_scraped_game_log(db: AsyncSession, game_log_data: SkaterGameLog
     )
     await db.execute(stmt)
     await db.commit()
+
+async def get_player_game_log_by_game_and_player_id(db: AsyncSession, game_id: int, player_id: int) -> SkaterGameLog | None:
+    """Fetches player game log from db by game ID and player ID."""
+    result = await db.execute(
+        select(SkaterGameLog).where(
+            SkaterGameLog.game_id == game_id,
+            SkaterGameLog.player_id == player_id
+        )
+    )
+    game_log = result.scalar_one_or_none()
+    return game_log
