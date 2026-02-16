@@ -17,7 +17,7 @@ class PlayerResponse(BaseModel):
     headshot: str | None = Field(alias="headshot")
     first_name: str = Field(alias="firstName")
     last_name: str = Field(alias="lastName")
-    number: int | None = Field(alias="sweaterNumber")
+    number: int | None = Field(default=None, alias="sweaterNumber")
     position: str | None = Field(alias="positionCode")
     shoots_catches: str | None = Field(alias="shootsCatches")
     
