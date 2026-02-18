@@ -24,9 +24,15 @@ async def upsert_scraped_player(db: AsyncSession, player_data: PlayerResponse, t
     await db.execute(stmt)
     await db.commit()
 
-async def get_player_by_id(db: AsyncSession, player_id: int) -> Player | None:
+async def get_skater_by_id(db: AsyncSession, player_id: int) -> Player | None:
     """Fetches player from db by ID."""
-    result = await db.execute(select(Player).where(Player.id == player_id))
+    result = await db.execute(select(Player).where(Player.id == player_id, Player.position != "G"))
+    player = result.scalar_one_or_none()
+    return player
+
+async def get_goalie_by_id(db: AsyncSession, player_id: int) -> Player | None:
+    """Fetches goalie from db by ID."""
+    result = await db.execute(select(Player).where(Player.id == player_id, Player.position == "G"))
     player = result.scalar_one_or_none()
     return player
 
