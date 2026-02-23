@@ -1,8 +1,11 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from external.nhl.teams import fetch_and_clean_team, fetch_and_clean_team_roster
+from external.nhl.teams import fetch_and_clean_team, fetch_and_clean_team_roster, fetch_and_clean_team_schedule
 from .crud.team_history import upsert_team_history, check_team_history_exists_and_updated
-from .crud.teams import upsert_team, get_all_tri_codes_update_roster, update_team_roster_last_updated
+from .crud.teams import get_all_tri_codes_in_db, upsert_team, get_all_tri_codes_update_roster, update_team_roster_last_updated
+from .crud.games import upsert_scraped_game_from_schedule, get_date_most_recent_game_marked_as_future
 from .crud.players import upsert_scraped_player
+import datetime
+
 CURRENT_TEAMS = [
         8, 7, 2, 28, 13, 12, 54, 52, 
         18, 1, 9, 21, 15, 26, 10, 22,
@@ -39,3 +42,14 @@ async def fetch_current_rosters_for_all_teams(db: AsyncSession):
                 await upsert_scraped_player(db, player, tri_code)
             await update_team_roster_last_updated(db, tri_code)
         
+async def fetch_current_schedules_for_all_teams(db: AsyncSession):
+    tri_codes = await get_all_tri_codes_in_db(db)
+    for tri_code in tri_codes:
+        current_marked_upcoming_date = await get_date_most_recent_game_marked_as_future(db, tri_code)
+        # only fetch and update if current time(UTC) more recent
+        current_time = datetime.datetime.now(datetime.timezone.utc)
+        if current_marked_upcoming_date is None or current_time >= current_marked_upcoming_date:
+            schedule_data = await fetch_and_clean_team_schedule(tri_code, "now")
+            if schedule_data:
+                for game in schedule_data:
+                    await upsert_scraped_game_from_schedule(db, game)

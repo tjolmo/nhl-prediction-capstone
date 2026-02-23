@@ -44,6 +44,12 @@ async def get_all_tri_codes_update_roster(db: AsyncSession) -> list[str]:
     tri_codes = result.scalars().all()
     return tri_codes
 
+async def get_all_tri_codes_in_db(db: AsyncSession) -> list[str]:
+    """Fetches all team tri codes from the database."""
+    result = await db.execute(select(Team.tri_code))
+    tri_codes = result.scalars().all()
+    return tri_codes
+
 async def update_team_roster_last_updated(db: AsyncSession, tri_code: str):
     """Updates the roster_last_updated field for a team."""
     stmt = (
