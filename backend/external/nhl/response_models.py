@@ -1,4 +1,5 @@
 from pydantic import BaseModel, Field, field_validator
+import datetime
 
 class TeamResponse(BaseModel):
     current_name: str = Field(alias="fullName")
@@ -28,5 +29,62 @@ class PlayerResponse(BaseModel):
             return v["default"]
         return v
 
+    class Config:
+        validate_by_name = True
+
+
+class GameResponse(BaseModel):
+    id: int = Field(alias="id")
+    home_team_tri_code: str = Field(alias="homeTeam")
+    away_team_tri_code: str = Field(alias="awayTeam")
+    season: int = Field(alias="season")
+    date: int = Field(alias="gameDate")
+    venue: str = Field(alias="venue")
+    start_time: datetime.datetime = Field(alias="startTimeUTC")
+    home_team_logo: str | None = Field(alias="homeTeam")
+    away_team_logo: str | None = Field(alias="awayTeam")
+    home_score: int | None = Field(alias="homeTeam")
+    away_score: int | None = Field(alias="awayTeam")
+    game_state: str = Field(alias="gameState")
+
+    # get team tri codes
+    @field_validator("home_team_tri_code", "away_team_tri_code", mode="before")
+    def extract_tri_codes(cls, v) -> str:
+        if isinstance(v, dict) and "abbrev" in v:
+            return v["abbrev"]
+        return v
+
+    #clean str date "YYYY-MM-DD" to YYYYMMDD int
+    @field_validator("date", mode="before")
+    def convert_date(cls, v) -> int:
+        if isinstance(v, str):
+            try:
+                dt = datetime.datetime.strptime(v, "%Y-%m-%d")
+                return int(dt.strftime("%Y%m%d"))
+            except ValueError:
+                raise ValueError(f"Invalid date format: {v}. Expected 'YYYY-MM-DD'.")
+        return v
+    
+    # get team logos    
+    @field_validator("home_team_logo", "away_team_logo", mode="before")
+    def extract_logos(cls, v) -> str | None:
+        if isinstance(v, dict) and "logo" in v:
+            return v["logo"]
+        return None
+    
+    # get team scores
+    @field_validator("home_score", "away_score", mode="before")
+    def extract_scores(cls, v) -> int | None:
+        if isinstance(v, dict) and "score" in v:
+            return v["score"]
+        return None
+    
+    # get venue name
+    @field_validator("venue", mode="before")
+    def extract_venue(cls, v) -> str:
+        if isinstance(v, dict) and "default" in v:
+            return v["default"]
+        return v
+    
     class Config:
         validate_by_name = True

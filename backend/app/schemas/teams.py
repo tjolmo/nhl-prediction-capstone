@@ -17,3 +17,11 @@ class TeamRosterAddOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+class TeamScheduleAddOut(BaseModel):
+    team: str
+    season: str
+    num_games_added: int
+
+    class Config:
+        from_attributes = True

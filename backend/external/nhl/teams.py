@@ -1,5 +1,5 @@
 import httpx
-from .response_models import TeamResponse, PlayerResponse, TeamHistoryResponse
+from .response_models import TeamResponse, PlayerResponse, TeamHistoryResponse, GameResponse
 
 async def fetch_and_clean_team(team_id: int) -> tuple[TeamResponse, TeamHistoryResponse] | None:
     """Scrapes team data from API, cleans, returns"""
@@ -32,5 +32,22 @@ async def fetch_and_clean_team_roster(team_tricode: str, season: str="current") 
             return None
         except Exception as e:
             print(f"Error scraping Team {team_tricode} Season {season} Roster: {e}")
+            return None
+
+async def fetch_and_clean_team_schedule(team_tricode: str, season: str="now") -> list[GameResponse] | None:
+    base_url = f"https://api-web.nhle.com/v1/club-schedule-season/{team_tricode}/{season}"
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.get(base_url, follow_redirects=True)
+            response.raise_for_status()
+            # get games
+            games = response.json().get("games", [])
+            #remove all preseason games
+            games = [game for game in games if game.get("gameType") != 1]
+            if games and len(games) > 0:
+                return [GameResponse(**game) for game in games]
+            return None
+        except Exception as e:
+            print(f"Error scraping Team {team_tricode} Season {season} Schedule: {e}")
             return None
 
