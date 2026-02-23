@@ -41,3 +41,32 @@ async def get_team_last_5_games(db: AsyncSession, tri_code: str) -> list[Games]:
     )
     games = result.scalars().all()
     return games
+
+async def get_date_most_recent_game_marked_as_future(db: AsyncSession, tri_code: str) -> datetime.datetime | None:
+    """Fetches most recent game marked as future from db for a team by tri code."""
+    result = await db.execute(
+        select(Games.start_time).
+        where(
+            (Games.home_team_tri_code == tri_code) | (Games.away_team_tri_code == tri_code),
+            (Games.game_state == "FUT")
+        ).
+        order_by(Games.date.asc()).
+        limit(1)
+    )
+    game = result.scalar_one_or_none()
+    return game
+
+async def get_next_game_info_by_tri_code(db: AsyncSession, tri_code: str) -> Games | None:
+    """Fetches next game info from db for a team by tri code."""
+    result = await db.execute(
+        select(Games).
+        where(
+            (Games.home_team_tri_code == tri_code) | (Games.away_team_tri_code == tri_code),
+            (Games.game_state == "FUT")
+        ).
+        order_by(Games.date.asc()).
+        limit(1)
+    )
+    game = result.scalar_one_or_none()
+    return game
+

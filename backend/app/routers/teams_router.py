@@ -3,7 +3,7 @@ from app.dependencies import get_db
 from external.nhl.teams import fetch_and_clean_team, fetch_and_clean_team_roster, fetch_and_clean_team_schedule
 from app.crud.teams import upsert_team, get_team_by_id, check_tri_code_exists, update_team_roster_last_updated
 from app.crud.team_history import upsert_team_history
-from app.crud.games import upsert_scraped_game_from_schedule, get_team_last_5_games
+from app.crud.games import get_date_most_recent_game_marked_as_future, upsert_scraped_game_from_schedule, get_team_last_5_games, get_next_game_info_by_tri_code
 from app.schemas.teams import TeamInfoOut, TeamRosterAddOut, TeamScheduleAddOut, Last5GameInfoOut
 from app.crud.players import upsert_scraped_player
 
@@ -66,3 +66,28 @@ async def get_last_5_games(tri_code: str, db = Depends(get_db)):
     if last_5 is not None:
         return [Last5GameInfoOut(game_id=game.id, date=game.date, home_team_tri_code=game.home_team_tri_code, away_team_tri_code=game.away_team_tri_code, home_score=game.home_score, away_score=game.away_score) for game in last_5]
     raise HTTPException(status_code=404, detail=f"No games found for Team {tri_code} in DB")
+
+@router.get("/nextgame/date/{tri_code}", status_code=200)
+async def get_next_game_date(tri_code: str, db = Depends(get_db)):
+    if not await check_tri_code_exists(db, tri_code):
+        raise HTTPException(status_code=404, detail=f"Team {tri_code} not found in DB")
+    next_game = await get_date_most_recent_game_marked_as_future(db, tri_code)
+    if next_game is not None:
+        return {"next_game_date": next_game}
+    raise HTTPException(status_code=404, detail=f"No future games found for Team {tri_code} in DB")
+
+@router.get("/nextgame/info/{tri_code}", status_code=200)
+async def get_next_game_info(tri_code: str, db = Depends(get_db)):
+    if not await check_tri_code_exists(db, tri_code):
+        raise HTTPException(status_code=404, detail=f"Team {tri_code} not found in DB")
+    next_game = await get_next_game_info_by_tri_code(db, tri_code)
+    if next_game is not None:
+        return {
+            "game_id": next_game.id,
+            "date": next_game.date,
+            "home_team_tri_code": next_game.home_team_tri_code,
+            "away_team_tri_code": next_game.away_team_tri_code,
+            "venue": next_game.venue,
+            "start_time": next_game.start_time
+        }
+    raise HTTPException(status_code=404, detail=f"No future games found for Team {tri_code} in DB") 
