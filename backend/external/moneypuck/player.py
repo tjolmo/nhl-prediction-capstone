@@ -32,7 +32,7 @@ def scrape_skater_game_data(player_id: int, start_date: int|None = None) -> list
         print(f"Error loading data: {e}")
         return None
 
-def scrape_goalie_game_data(player_id: int) -> list[GoalieGameLogResponse] | None:
+def scrape_goalie_game_data(player_id: int, start_date: int|None = None) -> list[GoalieGameLogResponse] | None:
     csv_url = f"https://moneypuck.com/moneypuck/playerData/careers/gameByGame/regular/goalies/{player_id}.csv"
     cols= [
         'playerId', 'season', 'name', 'gameId', 'home_or_away',
@@ -59,7 +59,10 @@ def scrape_goalie_game_data(player_id: int) -> list[GoalieGameLogResponse] | Non
         )
         # filters to last 3 seasons. All situations, meaning all game
         filtered = df.query('season >= 2023 and situation == "all"').copy()
-        # convert to list of SkaterGameLogResponse
+        # filter by date
+        if start_date:
+            filtered = filtered.query(f'gameDate >= {start_date}').copy()
+        # convert to list of GoalieGameLogResponse
         return [GoalieGameLogResponse.model_validate(row) for row in filtered.to_dict("records")]
     except Exception as e:
         print(f"Error loading data: {e}")

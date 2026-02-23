@@ -56,3 +56,13 @@ async def get_all_skater_ids_and_teams(db: AsyncSession) -> list[tuple[int, str]
     )
     player_ids = result.all()
     return player_ids
+
+async def get_all_goalie_ids_and_teams(db: AsyncSession) -> list[tuple[int, str]]:
+    """Fetches all goalie IDs w team from the database."""
+    result = await db.execute(
+        select(Player.id, Player.current_team_tri_code).where(
+            Player.position == "G"
+        )
+    )
+    player_ids = result.all()
+    return player_ids

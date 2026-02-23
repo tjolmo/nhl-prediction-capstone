@@ -3,6 +3,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from ..models import GoalieGameLog
 from external.moneypuck.response_models import GoalieGameLogResponse
+import datetime
 
 async def upsert_scraped_goalie_game_log(db: AsyncSession, game_log_data: GoalieGameLogResponse):
     """Upserts scraped game game log into local db GoalieGameLogs table."""
@@ -56,3 +57,15 @@ async def get_goalie_game_log_by_game_and_player_id(db: AsyncSession, game_id: i
     )
     game_log = result.scalar_one_or_none()
     return game_log
+
+
+async def get_goalie_most_recent_game_date_and_last_updated(db: AsyncSession, player_id: int) -> tuple[int, datetime.datetime] | None:
+    """Fetches most recent game date from db for a goalie by player ID."""
+    result = await db.execute(
+        select(GoalieGameLog.game_date, GoalieGameLog.last_updated).
+        where(GoalieGameLog.player_id == player_id).
+        order_by(GoalieGameLog.game_date.desc()).
+        limit(1)
+    )
+    game_date_and_last_updated = result.one_or_none()
+    return game_date_and_last_updated
