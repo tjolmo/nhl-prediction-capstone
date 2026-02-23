@@ -62,7 +62,8 @@ async def fetch_skater_all_game_logs_for_recent_games(db: AsyncSession):
     for player in players:
         player_id = player[0]
         tri_code = player[1]
-        latest_game = await get_date_most_recent_game_played(db, tri_code)
+        # date as int YYYYMMDD
+        latest_game: int = await get_date_most_recent_game_played(db, tri_code)
         #convert to utc dtime YYYYMMDD int to datetime with utc timezone
         latest_game_datetime = datetime.datetime.strptime(str(latest_game), "%Y%m%d").replace(tzinfo=datetime.timezone.utc) if latest_game else None
         skater_info = await get_player_most_recent_game_date_and_last_updated(db, player_id)
@@ -71,7 +72,7 @@ async def fetch_skater_all_game_logs_for_recent_games(db: AsyncSession):
             last_updated = skater_info[1]
         if latest_game and (latest_game_log_date is None or latest_game > latest_game_log_date) and (last_updated is None or latest_game_datetime > last_updated):
             # eventually will change to other function that only fetches recent game logs instead of all game logs for a player
-            game_logs = scrape_skater_game_data(player_id)
+            game_logs = scrape_skater_game_data(player_id, latest_game)
             if game_logs:
                 for game_log in game_logs:
                     await upsert_scraped_game_log(db, game_log)

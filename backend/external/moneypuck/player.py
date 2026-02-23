@@ -1,7 +1,7 @@
 import pandas as pd
 from .response_models import SkaterGameLogResponse, GoalieGameLogResponse
 
-def scrape_skater_game_data(player_id: int) -> list[SkaterGameLogResponse] | None:
+def scrape_skater_game_data(player_id: int, start_date: int|None = None) -> list[SkaterGameLogResponse] | None:
     csv_url = f"https://moneypuck.com/moneypuck/playerData/careers/gameByGame/regular/skaters/{player_id}.csv"
     cols= [
         'playerId', 'season', 'name', 'gameId', 'home_or_away',
@@ -24,6 +24,8 @@ def scrape_skater_game_data(player_id: int) -> list[SkaterGameLogResponse] | Non
         )
         # filters to last 3 seasons. All situations, meaning all game
         filtered = df.query('season >= 2023 and situation == "all"').copy()
+        if start_date:
+            filtered = filtered.query(f'gameDate >= {start_date}').copy()
         # convert to list of SkaterGameLogResponse
         return [SkaterGameLogResponse.model_validate(row) for row in filtered.to_dict("records")]
     except Exception as e:
