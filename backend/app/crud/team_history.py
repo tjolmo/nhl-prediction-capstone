@@ -14,6 +14,7 @@ async def upsert_team_history(db: AsyncSession, team_history_data: TeamHistoryRe
         set_={
             "name": stmt.excluded.name,
             "tri_code": stmt.excluded.tri_code,
+            "last_updated": datetime.datetime.now(),
         }
     )
     await db.execute(stmt)
