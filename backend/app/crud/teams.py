@@ -37,7 +37,7 @@ async def get_all_tri_codes_update_roster(db: AsyncSession) -> list[str]:
         select(Team.tri_code).where(
             or_(
                 Team.roster_last_updated.is_(None),
-                Team.roster_last_updated < datetime.datetime.now() - datetime.timedelta(days=1)
+                Team.roster_last_updated < datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=1)
             )
         )
     )
@@ -49,7 +49,7 @@ async def update_team_roster_last_updated(db: AsyncSession, tri_code: str):
     stmt = (
         update(Team).
         where(Team.tri_code == tri_code).
-        values(roster_last_updated=datetime.datetime.now())
+        values(roster_last_updated=datetime.datetime.now(datetime.timezone.utc))
     )
     await db.execute(stmt)
     await db.commit()

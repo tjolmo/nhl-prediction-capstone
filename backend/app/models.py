@@ -1,6 +1,6 @@
 from .database import Base
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKey, DateTime
 import datetime
 
 class Team(Base):
@@ -10,8 +10,8 @@ class Team(Base):
     franchise_id: Mapped[int] = mapped_column(nullable=False)
     current_players: Mapped[list["Player"]] = relationship("Player", back_populates="current_team")
     team_ids: Mapped[list[int]] = relationship("TeamHistory", back_populates="team")
-    last_updated: Mapped[datetime.datetime] = mapped_column(nullable=False, default=datetime.datetime.now, onupdate=datetime.datetime.now)
-    roster_last_updated: Mapped[datetime.datetime] = mapped_column(nullable=True)
+    last_updated: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=datetime.datetime.now(datetime.timezone.utc), onupdate=datetime.datetime.now(datetime.timezone.utc))
+    roster_last_updated: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), nullable=True)
 
 class TeamHistory(Base):
     __tablename__ = "team_history"
@@ -19,7 +19,7 @@ class TeamHistory(Base):
     name: Mapped[str] = mapped_column(nullable=False)
     tri_code: Mapped[str] = mapped_column(ForeignKey("teams.tri_code"), nullable=False)
     team: Mapped["Team"] = relationship("Team", back_populates="team_ids")
-    last_updated: Mapped[datetime.datetime] = mapped_column(nullable=False, default=datetime.datetime.now, onupdate=datetime.datetime.now)
+    last_updated: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=datetime.datetime.now(datetime.timezone.utc), onupdate=datetime.datetime.now(datetime.timezone.utc))
 
 class Player(Base):
     __tablename__ = "players"
@@ -33,10 +33,10 @@ class Player(Base):
     position: Mapped[str] = mapped_column(nullable=True)
     shoots_catches: Mapped[str] = mapped_column(nullable=True)
     current_team: Mapped["Team"] = relationship("Team", back_populates="current_players")
-    last_updated: Mapped[datetime.datetime] = mapped_column(nullable=False, default=datetime.datetime.now, onupdate=datetime.datetime.now)
+    last_updated: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=datetime.datetime.now(datetime.timezone.utc), onupdate=datetime.datetime.now(datetime.timezone.utc))
     game_logs: Mapped[list["SkaterGameLog"]] = relationship("SkaterGameLog", back_populates="player")
     goalie_game_logs: Mapped[list["GoalieGameLog"]] = relationship("GoalieGameLog", back_populates="player")
-    game_log_last_updated: Mapped[datetime.datetime] = mapped_column(nullable=True)
+    game_log_last_updated: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), nullable=True)
 
 class SkaterGameLog(Base):
     __tablename__ = "skater_game_logs"
@@ -59,7 +59,7 @@ class SkaterGameLog(Base):
     shot_attempts: Mapped[int] = mapped_column(nullable=False)
     on_ice_x_goals_percentage: Mapped[float] = mapped_column(nullable=False)
     game_score: Mapped[float] = mapped_column(nullable=False)
-    last_updated: Mapped[datetime.datetime] = mapped_column(nullable=False, default=datetime.datetime.now, onupdate=datetime.datetime.now)
+    last_updated: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=datetime.datetime.now(datetime.timezone.utc), onupdate=datetime.datetime.now(datetime.timezone.utc))
     player: Mapped["Player"] = relationship("Player", back_populates="game_logs")
 
 class GoalieGameLog(Base):
@@ -97,5 +97,21 @@ class GoalieGameLog(Base):
     blocked_shot_attempts: Mapped[int] = mapped_column(nullable=False)
     penality_minutes: Mapped[int] = mapped_column(nullable=False)
     penalties: Mapped[int] = mapped_column(nullable=False)
-    last_updated: Mapped[datetime.datetime] = mapped_column(nullable=False, default=datetime.datetime.now, onupdate=datetime.datetime.now)
+    last_updated: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=datetime.datetime.now(datetime.timezone.utc), onupdate=datetime.datetime.now(datetime.timezone.utc))
     player: Mapped["Player"] = relationship("Player", back_populates="goalie_game_logs")
+
+class Games(Base):
+    __tablename__ = "games"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    home_team_tri_code: Mapped[str] = mapped_column(ForeignKey("teams.tri_code"), nullable=False)
+    away_team_tri_code: Mapped[str] = mapped_column(ForeignKey("teams.tri_code"), nullable=False)
+    season: Mapped[int] = mapped_column(nullable=False)
+    date: Mapped[int] = mapped_column(nullable=False)
+    venue: Mapped[str] = mapped_column(nullable=False)
+    start_time: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    home_team_logo: Mapped[str] = mapped_column(nullable=True)
+    away_team_logo: Mapped[str] = mapped_column(nullable=True)
+    home_score: Mapped[int] = mapped_column(nullable=True)
+    away_score: Mapped[int] = mapped_column(nullable=True)
+    game_state: Mapped[str] = mapped_column(nullable=False)
+    last_updated: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=datetime.datetime.now(datetime.timezone.utc), onupdate=datetime.datetime.now(datetime.timezone.utc))

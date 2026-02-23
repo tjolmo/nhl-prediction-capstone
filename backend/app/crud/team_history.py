@@ -14,7 +14,7 @@ async def upsert_team_history(db: AsyncSession, team_history_data: TeamHistoryRe
         set_={
             "name": stmt.excluded.name,
             "tri_code": stmt.excluded.tri_code,
-            "last_updated": datetime.datetime.now(),
+            "last_updated": datetime.datetime.now(datetime.timezone.utc),
         }
     )
     await db.execute(stmt)
@@ -26,6 +26,6 @@ async def check_team_history_exists_and_updated(db: AsyncSession, team_id: int) 
     team_history = result.scalar_one_or_none()
     if team_history:
         # If the team history exists, check if it was updated in the last day
-        if team_history.last_updated and (datetime.datetime.now() - team_history.last_updated).days < 1:
+        if team_history.last_updated and (datetime.datetime.now(datetime.timezone.utc) - team_history.last_updated).days < 1:
             return True
     return False

@@ -3,6 +3,7 @@ from sqlalchemy import select, func, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from ..models import Player
 from external.nhl.response_models import PlayerResponse
+import datetime
 
 async def upsert_scraped_player(db: AsyncSession, player_data: PlayerResponse, tri_code: str | None = None):
     """Upserts scraped player into local db Players table."""
@@ -41,7 +42,7 @@ async def update_player_game_log_last_updated(db: AsyncSession, player_id: int):
     stmt = (
         update(Player).
         where(Player.id == player_id).
-        values(game_log_last_updated=func.now())
+        values(game_log_last_updated=datetime.datetime.now(datetime.timezone.utc))
     )
     await db.execute(stmt)
     await db.commit()
