@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from .database import engine
 from .routers import teams_router, player_router
 from .database import AsyncSessionLocal
-from .schedules import add_current_teams_to_db, add_old_teams_to_db, fetch_current_rosters_for_all_teams, fetch_current_schedules_for_all_teams
+from .schedules import add_current_teams_to_db, add_old_teams_to_db, fetch_current_rosters_for_all_teams, fetch_current_schedules_for_all_teams, fetch_skater_all_game_logs_for_recent_games
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -14,6 +14,7 @@ async def lifespan(app: FastAPI):
         await add_old_teams_to_db(db)
         await fetch_current_rosters_for_all_teams(db)
         await fetch_current_schedules_for_all_teams(db)
+        await fetch_skater_all_game_logs_for_recent_games(db)
 
 
     yield 

@@ -1,9 +1,11 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from external.nhl.teams import fetch_and_clean_team, fetch_and_clean_team_roster, fetch_and_clean_team_schedule
+from external.moneypuck.player import scrape_skater_game_data
 from .crud.team_history import upsert_team_history, check_team_history_exists_and_updated
 from .crud.teams import get_all_tri_codes_in_db, upsert_team, get_all_tri_codes_update_roster, update_team_roster_last_updated
-from .crud.games import upsert_scraped_game_from_schedule, get_date_most_recent_game_marked_as_future
-from .crud.players import upsert_scraped_player
+from .crud.games import get_date_most_recent_game_played, upsert_scraped_game_from_schedule, get_date_most_recent_game_marked_as_future
+from .crud.players import get_all_skater_ids_and_teams, upsert_scraped_player
+from .crud.skater_game_logs import get_player_most_recent_game_date_and_last_updated, upsert_scraped_game_log
 import datetime
 
 CURRENT_TEAMS = [
@@ -53,3 +55,25 @@ async def fetch_current_schedules_for_all_teams(db: AsyncSession):
             if schedule_data:
                 for game in schedule_data:
                     await upsert_scraped_game_from_schedule(db, game)
+
+async def fetch_skater_all_game_logs_for_recent_games(db: AsyncSession):
+    """Fetches and upserts skater game logs for recent games for a team by tri code."""
+    players = await get_all_skater_ids_and_teams(db)
+    for player in players:
+        player_id = player[0]
+        tri_code = player[1]
+        latest_game = await get_date_most_recent_game_played(db, tri_code)
+        #convert to utc dtime YYYYMMDD int to datetime with utc timezone
+        latest_game_datetime = datetime.datetime.strptime(str(latest_game), "%Y%m%d").replace(tzinfo=datetime.timezone.utc) if latest_game else None
+        skater_info = await get_player_most_recent_game_date_and_last_updated(db, player_id)
+        if skater_info:
+            latest_game_log_date = skater_info[0]
+            last_updated = skater_info[1]
+        if latest_game and (latest_game_log_date is None or latest_game > latest_game_log_date) and (last_updated is None or latest_game_datetime > last_updated):
+            # eventually will change to other function that only fetches recent game logs instead of all game logs for a player
+            game_logs = scrape_skater_game_data(player_id)
+            if game_logs:
+                for game_log in game_logs:
+                    await upsert_scraped_game_log(db, game_log)
+
+#TODO: add a more irregular schedule to scrape players whose las_updated has been a while ago

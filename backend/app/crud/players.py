@@ -46,3 +46,13 @@ async def update_player_game_log_last_updated(db: AsyncSession, player_id: int):
     )
     await db.execute(stmt)
     await db.commit()
+
+async def get_all_skater_ids_and_teams(db: AsyncSession) -> list[tuple[int, str]]:
+    """Fetches all skater IDs w team from the database."""
+    result = await db.execute(
+        select(Player.id, Player.current_team_tri_code).where(
+            Player.position != "G"
+        )
+    )
+    player_ids = result.all()
+    return player_ids
