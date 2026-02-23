@@ -25,3 +25,14 @@ class TeamScheduleAddOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+class Last5GameInfoOut(BaseModel):
+    game_id: int
+    date: int
+    home_team_tri_code: str
+    away_team_tri_code: str
+    home_score: int | None
+    away_score: int | None
+
+    class Config:
+        from_attributes = True

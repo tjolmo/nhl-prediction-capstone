@@ -1,4 +1,5 @@
 from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from ..models import Games
 from external.nhl.response_models import GameResponse
@@ -26,3 +27,17 @@ async def upsert_scraped_game_from_schedule(db: AsyncSession, game_data: GameRes
     )
     await db.execute(stmt)
     await db.commit()
+
+async def get_team_last_5_games(db: AsyncSession, tri_code: str) -> list[Games]:
+    """Fetches last 5 games from db for a team by tri code and season."""
+    result = await db.execute(
+        select(Games).
+        where(
+            (Games.home_team_tri_code == tri_code) | (Games.away_team_tri_code == tri_code),
+            (Games.game_state == "OFF")
+        ).
+        order_by(Games.date.desc()).
+        limit(5)
+    )
+    games = result.scalars().all()
+    return games

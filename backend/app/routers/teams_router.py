@@ -3,8 +3,8 @@ from app.dependencies import get_db
 from external.nhl.teams import fetch_and_clean_team, fetch_and_clean_team_roster, fetch_and_clean_team_schedule
 from app.crud.teams import upsert_team, get_team_by_id, check_tri_code_exists, update_team_roster_last_updated
 from app.crud.team_history import upsert_team_history
-from app.crud.games import upsert_scraped_game_from_schedule
-from app.schemas.teams import TeamInfoOut, TeamRosterAddOut, TeamScheduleAddOut
+from app.crud.games import upsert_scraped_game_from_schedule, get_team_last_5_games
+from app.schemas.teams import TeamInfoOut, TeamRosterAddOut, TeamScheduleAddOut, Last5GameInfoOut
 from app.crud.players import upsert_scraped_player
 
 router = APIRouter(prefix="/teams", tags=["teams"])
@@ -57,3 +57,12 @@ async def add_team_schedule(tri_code: str, season: str, db = Depends(get_db)):
             num_games_added += 1
         return TeamScheduleAddOut(team=tri_code, season=season, num_games_added=num_games_added)
     raise HTTPException(status_code=404, detail=f"Schedule for Team {tri_code} Season {season} not found in external API")
+
+@router.get("/last5/{tri_code}", status_code=200, response_model=list[Last5GameInfoOut])
+async def get_last_5_games(tri_code: str, db = Depends(get_db)):
+    if not await check_tri_code_exists(db, tri_code):
+        raise HTTPException(status_code=404, detail=f"Team {tri_code} not found in DB")
+    last_5 = await get_team_last_5_games(db, tri_code)
+    if last_5 is not None:
+        return [Last5GameInfoOut(game_id=game.id, date=game.date, home_team_tri_code=game.home_team_tri_code, away_team_tri_code=game.away_team_tri_code, home_score=game.home_score, away_score=game.away_score) for game in last_5]
+    raise HTTPException(status_code=404, detail=f"No games found for Team {tri_code} in DB")
