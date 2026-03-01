@@ -2,10 +2,10 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy import select, func, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from ..models import Player
-from external.nhl.response_models import PlayerResponse
+from external.nhl.response_models import PlayerResponse, PlayerLandingResponse
 import datetime
 
-async def upsert_scraped_player(db: AsyncSession, player_data: PlayerResponse, tri_code: str | None = None):
+async def upsert_scraped_player(db: AsyncSession, player_data: PlayerResponse|PlayerLandingResponse, tri_code: str | None = None):
     """Upserts scraped player into local db Players table."""
     data = player_data.model_dump()
     data["current_team_tri_code"] = tri_code
@@ -66,3 +66,11 @@ async def get_all_goalie_ids_and_teams(db: AsyncSession) -> list[tuple[int, str]
     )
     player_ids = result.all()
     return player_ids
+
+async def get_players_not_in_db(db: AsyncSession, player_ids: list[int]) -> list[int]:
+    """Fetches player IDs not in the database."""
+    result = await db.execute(
+        select(Player.id).where(Player.id.in_(player_ids))
+    )
+    existing_player_ids = result.scalars().all()
+    return [player_id for player_id in player_ids if player_id not in existing_player_ids]

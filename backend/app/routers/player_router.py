@@ -5,6 +5,7 @@ from app.crud.players import get_skater_by_id, update_player_game_log_last_updat
 from app.crud.skater_game_logs import upsert_scraped_game_log, get_player_game_log_by_game_and_player_id
 from app.crud.goalie_game_logs import upsert_scraped_goalie_game_log, get_goalie_game_log_by_game_and_player_id
 from external.moneypuck.player import scrape_skater_game_data, scrape_goalie_game_data
+from external.nhl.games import fetch_and_get_players_in_a_game
 
 router = APIRouter(prefix="/players", tags=["players"])
 
@@ -63,3 +64,15 @@ async def get_player_game_log(game_id: int, player_id: int, db = Depends(get_db)
             raise HTTPException(status_code=404, detail=f"Game log for goalie {player_id} and game {game_id} not found in DB")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error retrieving game log for goalie {player_id} and game {game_id} from DB: {e}")
+
+@router.get("/game/{game_id}/players", status_code=200, response_model=list[int])
+async def get_players_in_a_game(game_id: int):
+    """Fetches list of player IDs for a given game ID."""
+    try:
+        player_ids = await fetch_and_get_players_in_a_game(game_id)
+        if player_ids:
+            return player_ids
+        else:
+            raise HTTPException(status_code=404, detail=f"Players for game {game_id} not found in external API")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error retrieving players for game {game_id} from external API: {e}")

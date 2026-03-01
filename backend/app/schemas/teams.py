@@ -22,6 +22,7 @@ class TeamScheduleAddOut(BaseModel):
     team: str
     season: str
     num_games_added: int
+    num_players_added: int
 
     class Config:
         from_attributes = True

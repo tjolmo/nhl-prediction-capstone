@@ -50,4 +50,3 @@ async def fetch_and_clean_team_schedule(team_tricode: str, season: str="now") ->
         except Exception as e:
             print(f"Error scraping Team {team_tricode} Season {season} Schedule: {e}")
             return None
-

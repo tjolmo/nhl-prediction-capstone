@@ -84,3 +84,10 @@ async def get_next_game_info_by_tri_code(db: AsyncSession, tri_code: str) -> Gam
     game = result.scalar_one_or_none()
     return game
 
+async def check_if_games_in_db(db: AsyncSession, game_ids: list[int]) -> list[int]:
+    """Checks if games are in db by game IDs."""
+    result = await db.execute(
+        select(Games.id).where(Games.id.in_(game_ids))
+    )
+    existing_game_ids = result.scalars().all()
+    return existing_game_ids

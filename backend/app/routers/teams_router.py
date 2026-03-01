@@ -1,11 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException
 from app.dependencies import get_db
+from external.nhl.games import fetch_and_get_players_in_a_game
+from external.nhl.players import fetch_and_get_players_info
 from external.nhl.teams import fetch_and_clean_team, fetch_and_clean_team_roster, fetch_and_clean_team_schedule
 from app.crud.teams import upsert_team, get_team_by_id, check_tri_code_exists, update_team_roster_last_updated
 from app.crud.team_history import upsert_team_history
 from app.crud.games import get_date_most_recent_game_marked_as_future, upsert_scraped_game_from_schedule, get_team_last_5_games, get_next_game_info_by_tri_code
 from app.schemas.teams import TeamInfoOut, TeamRosterAddOut, TeamScheduleAddOut, Last5GameInfoOut
-from app.crud.players import upsert_scraped_player
+from app.crud.players import get_players_not_in_db, upsert_scraped_player
 
 router = APIRouter(prefix="/teams", tags=["teams"])
 
@@ -44,19 +46,6 @@ async def add_team_roster(tri_code: str, season: str, db = Depends(get_db)):
         await update_team_roster_last_updated(db, tri_code)
         return TeamRosterAddOut(team=tri_code, season=season, roster_added=True, num_players_added=num_players_added)
     raise HTTPException(status_code=404, detail=f"Roster for Team {tri_code} Season {season} not found in external API")
-
-@router.post("/add/schedule/{tri_code}/{season}", status_code=200)
-async def add_team_schedule(tri_code: str, season: str, db = Depends(get_db)):
-    if not await check_tri_code_exists(db, tri_code):
-        raise HTTPException(status_code=404, detail=f"Team {tri_code} not found in DB")
-    schedule_data = await fetch_and_clean_team_schedule(tri_code, season)
-    if schedule_data:
-        num_games_added = 0
-        for game in schedule_data:
-            await upsert_scraped_game_from_schedule(db, game)
-            num_games_added += 1
-        return TeamScheduleAddOut(team=tri_code, season=season, num_games_added=num_games_added)
-    raise HTTPException(status_code=404, detail=f"Schedule for Team {tri_code} Season {season} not found in external API")
 
 @router.get("/last5/{tri_code}", status_code=200, response_model=list[Last5GameInfoOut])
 async def get_last_5_games(tri_code: str, db = Depends(get_db)):
