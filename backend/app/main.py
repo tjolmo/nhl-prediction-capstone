@@ -14,9 +14,9 @@ async def lifespan(app: FastAPI):
     async with AsyncSessionLocal() as db:
         await add_current_teams_to_db(db)
         await add_old_teams_to_db(db)
-        await fetch_current_rosters_for_all_teams(db)
         await fetch_current_schedules_for_all_teams(db)
         await fetch_past_two_seasons_schedules_for_all_teams(db)
+        await fetch_current_rosters_for_all_teams(db)
         #await fetch_skater_all_game_logs_for_recent_games(db)
         #await fetch_goalie_all_game_logs_for_recent_games(db)
 
