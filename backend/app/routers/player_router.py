@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from app.dependencies import get_db
 from app.schemas.player import PlayerGameLogAddOut, PlayerGameLogGetOut, GoalieGameLogGetOut
 from app.crud.players import get_skater_by_id, update_player_game_log_last_updated, get_goalie_by_id
-from app.crud.skater_game_logs import upsert_scraped_game_log, get_player_game_log_by_game_and_player_id
+from app.crud.skater_game_logs import upsert_scraped_game_logs, get_player_game_log_by_game_and_player_id
 from app.crud.goalie_game_logs import upsert_scraped_goalie_game_log, get_goalie_game_log_by_game_and_player_id
 from external.moneypuck.player import scrape_skater_game_data, scrape_goalie_game_data
 from external.nhl.games import fetch_and_get_players_in_a_game
@@ -19,7 +19,7 @@ async def add_skater_game_logs(player_id: int, db = Depends(get_db)):
     if game_logs:
         num_game_logs_added = 0
         for game_log in game_logs:
-            await upsert_scraped_game_log(db, game_log)
+            await upsert_scraped_game_logs(db, [game_log])
             num_game_logs_added += 1
         await update_player_game_log_last_updated(db, player_id)
         return PlayerGameLogAddOut(player_id=player_id, game_logs_added=num_game_logs_added)

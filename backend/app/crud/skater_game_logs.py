@@ -5,10 +5,12 @@ from ..models import SkaterGameLog
 from external.moneypuck.response_models import SkaterGameLogResponse
 import datetime
 
-async def upsert_scraped_game_log(db: AsyncSession, game_log_data: SkaterGameLogResponse):
+async def upsert_scraped_game_logs(db: AsyncSession, game_logs_data: list[SkaterGameLogResponse]):
     """Upserts scraped player game log into local db PlayerGameLogs table."""
-    data = game_log_data.model_dump()
-    stmt = insert(SkaterGameLog).values(**data)
+    if not game_logs_data:
+        return
+    data = [log.model_dump() for log in game_logs_data]
+    stmt = insert(SkaterGameLog).values(data)
     stmt = stmt.on_conflict_do_update(
         index_elements=['game_id', 'player_id'],
         set_={

@@ -8,8 +8,8 @@ from external.moneypuck.player import scrape_skater_game_data, scrape_goalie_gam
 from .crud.team_history import upsert_team_history, check_team_history_exists_and_updated
 from .crud.teams import get_all_tri_codes_in_db, upsert_team, get_all_tri_codes_update_roster, update_team_roster_last_updated
 from .crud.games import check_if_games_in_db, get_date_most_recent_game_played, upsert_scraped_game_from_schedule, get_date_most_recent_game_marked_as_future
-from .crud.players import get_all_goalie_ids_and_teams, get_all_skater_ids_and_teams, get_players_not_in_db, upsert_scraped_player, set_all_other_players_current_team_tri_code_to_null
-from .crud.skater_game_logs import get_player_most_recent_game_date_and_last_updated, upsert_scraped_game_log
+from .crud.players import get_all_goalie_ids_and_teams, get_all_skater_ids_and_teams, get_all_skaters_on_a_roster, get_players_not_in_db, upsert_scraped_player, set_all_other_players_current_team_tri_code_to_null
+from .crud.skater_game_logs import get_player_most_recent_game_date_and_last_updated, upsert_scraped_game_logs
 from .crud.goalie_game_logs import upsert_scraped_goalie_game_log
 import datetime
 
@@ -96,16 +96,29 @@ async def fetch_past_two_seasons_schedules_for_all_teams(db: AsyncSession):
         for game in schedule_data_to_add:
             await upsert_scraped_game_from_schedule(db, game)
 
-async def fetch_skater_all_game_logs_for_recent_games(db: AsyncSession):
-    """Fetches and upserts skater game logs for recent games for a team by tri code."""
+async def fetch_all_skater_game_logs(db: AsyncSession):
+    """Fetches and upserts skater game logs for all games"""
     game_logs = None
     players = await get_all_skater_ids_and_teams(db)
+    for player in players:
+        game_logs = scrape_skater_game_data(player[0])
+        #upsert to db
+        if game_logs:
+            await upsert_scraped_game_logs(db, game_logs)
+
+async def fetch_recent_skater_game_logs(db: AsyncSession):
+    """Fetches and upserts skater game logs for recent games for a team by tri code."""
+    game_logs = None
+    players = await get_all_skaters_on_a_roster(db)
     for player in players:
         player_id = player[0]
         tri_code = player[1]
 
         # date as int YYYYMMDD
-        latest_game: int = await get_date_most_recent_game_played(db, tri_code)
+        latest_game = None
+        if tri_code:
+            latest_game = await get_date_most_recent_game_played(db, tri_code)
+
         if latest_game:
             #convert to utc dtime YYYYMMDD int to datetime with utc timezone
             latest_game_datetime = datetime.datetime.strptime(str(latest_game), "%Y%m%d").replace(tzinfo=datetime.timezone.utc)
@@ -120,14 +133,14 @@ async def fetch_skater_all_game_logs_for_recent_games(db: AsyncSession):
                 (latest_game_datetime > last_updated):
                 # scrape just recent logs
                 game_logs = scrape_skater_game_data(player_id, latest_game)
+
         else:
             #scrape all if player has no game logs in db
             game_logs = scrape_skater_game_data(player_id)
 
         #upsert to db
         if game_logs:
-            for game_log in game_logs:
-                await upsert_scraped_game_log(db, game_log)
+            await upsert_scraped_game_logs(db, game_logs)
 
 async def fetch_goalie_all_game_logs_for_recent_games(db: AsyncSession):
     """Fetches and upserts goalie game logs for recent games for a team by tri code."""
