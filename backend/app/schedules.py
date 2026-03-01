@@ -7,7 +7,7 @@ from external.nhl.games import fetch_and_get_players_in_a_game
 from external.moneypuck.player import scrape_skater_game_data, scrape_goalie_game_data
 from .crud.team_history import upsert_team_history, check_team_history_exists_and_updated
 from .crud.teams import get_all_tri_codes_in_db, upsert_team, get_all_tri_codes_update_roster, update_team_roster_last_updated
-from .crud.games import check_if_games_in_db, get_all_teams_most_recent_game_dates, get_date_most_recent_game_played, upsert_scraped_game_from_schedule, get_date_most_recent_game_marked_as_future
+from .crud.games import check_if_games_in_db, get_all_teams_most_recent_game_dates, get_date_most_recent_game_not_completed, get_date_most_recent_game_played, upsert_scraped_game_from_schedule, get_date_most_recent_game_marked_as_future
 from .crud.players import get_all_goalie_ids_and_teams, get_all_skater_ids_and_teams, get_all_skaters_on_a_roster, get_players_not_in_db, upsert_scraped_player, set_all_other_players_current_team_tri_code_to_null, get_all_goalies_on_a_roster
 from .crud.skater_game_logs import get_player_most_recent_game_date_and_last_updated, upsert_scraped_game_logs
 from .crud.goalie_game_logs import upsert_scraped_goalie_game_logs
@@ -55,7 +55,7 @@ async def fetch_current_rosters_for_all_teams(db: AsyncSession):
 async def fetch_current_schedules_for_all_teams(db: AsyncSession):
     tri_codes = await get_all_tri_codes_in_db(db)
     for tri_code in tri_codes:
-        current_marked_upcoming_date = await get_date_most_recent_game_marked_as_future(db, tri_code)
+        current_marked_upcoming_date = await get_date_most_recent_game_not_completed(db, tri_code)
         # only fetch and update if current time(UTC) more recent
         current_time = datetime.datetime.now(datetime.timezone.utc)
         if current_marked_upcoming_date is None or current_time >= current_marked_upcoming_date:
@@ -64,7 +64,7 @@ async def fetch_current_schedules_for_all_teams(db: AsyncSession):
                 for game in schedule_data:
                     await upsert_scraped_game_from_schedule(db, game)
 
-async def fetch_past_two_seasons_schedules_for_all_teams(db: AsyncSession):
+async def fetch_all_season_schedules_for_all_teams(db: AsyncSession):
     tri_codes = await get_all_tri_codes_in_db(db)
     for season in ["20232024", "20242025", "now"]:
         all_schedule_data = set()
@@ -118,7 +118,6 @@ async def fetch_all_player_game_logs(db: AsyncSession, player_type: str = "all")
             if game_logs:
                 await upsert_scraped_goalie_game_logs(db, game_logs)
     
-
 async def fetch_recent_player_game_logs(db: AsyncSession, player_type: str = "all"):
     """Fetches and upserts player game logs for recent games for a team by tri code."""
     if player_type not in ["all", "skater", "goalie"]:

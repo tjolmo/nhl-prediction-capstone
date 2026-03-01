@@ -56,6 +56,20 @@ async def get_date_most_recent_game_marked_as_future(db: AsyncSession, tri_code:
     game = result.scalar_one_or_none()
     return game
 
+async def get_date_most_recent_game_not_completed(db: AsyncSession, tri_code: str) -> datetime.datetime | None:
+    """Fetches most recent game not completed from db for a team by tri code."""
+    result = await db.execute(
+        select(Games.start_time).
+        where(
+            (Games.home_team_tri_code == tri_code) | (Games.away_team_tri_code == tri_code),
+            (Games.game_state != "OFF")
+        ).
+        order_by(Games.date.asc()).
+        limit(1)
+    )
+    game = result.scalar_one_or_none()
+    return game
+
 async def get_date_most_recent_game_played(db: AsyncSession, tri_code: str) -> int | None:
     """Fetches most recent game played from db for a team by tri code."""
     result = await db.execute(
