@@ -87,7 +87,7 @@ async def fetch_past_two_seasons_schedules_for_all_teams(db: AsyncSession):
         for player_id in players_not_in_db:
             player_info = await fetch_and_get_players_info(player_id)
             if player_info:
-                await upsert_scraped_player(db, player_info, tri_code)
+                await upsert_scraped_player(db, player_info, None)
     
     # add every game to db after player scrape to ensure that players added first
     for game in schedule_data_to_add:
