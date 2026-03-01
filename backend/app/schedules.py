@@ -7,10 +7,10 @@ from external.nhl.games import fetch_and_get_players_in_a_game
 from external.moneypuck.player import scrape_skater_game_data, scrape_goalie_game_data
 from .crud.team_history import upsert_team_history, check_team_history_exists_and_updated
 from .crud.teams import get_all_tri_codes_in_db, upsert_team, get_all_tri_codes_update_roster, update_team_roster_last_updated
-from .crud.games import check_if_games_in_db, get_date_most_recent_game_played, upsert_scraped_game_from_schedule, get_date_most_recent_game_marked_as_future
-from .crud.players import get_all_goalie_ids_and_teams, get_all_skater_ids_and_teams, get_all_skaters_on_a_roster, get_players_not_in_db, upsert_scraped_player, set_all_other_players_current_team_tri_code_to_null
+from .crud.games import check_if_games_in_db, get_all_teams_most_recent_game_dates, get_date_most_recent_game_played, upsert_scraped_game_from_schedule, get_date_most_recent_game_marked_as_future
+from .crud.players import get_all_goalie_ids_and_teams, get_all_skater_ids_and_teams, get_all_skaters_on_a_roster, get_players_not_in_db, upsert_scraped_player, set_all_other_players_current_team_tri_code_to_null, get_all_goalies_on_a_roster
 from .crud.skater_game_logs import get_player_most_recent_game_date_and_last_updated, upsert_scraped_game_logs
-from .crud.goalie_game_logs import upsert_scraped_goalie_game_log
+from .crud.goalie_game_logs import upsert_scraped_goalie_game_logs
 import datetime
 
 CURRENT_TEAMS = [
@@ -96,92 +96,98 @@ async def fetch_past_two_seasons_schedules_for_all_teams(db: AsyncSession):
         for game in schedule_data_to_add:
             await upsert_scraped_game_from_schedule(db, game)
 
-async def fetch_all_skater_game_logs(db: AsyncSession):
-    """Fetches and upserts skater game logs for all games"""
+async def fetch_all_player_game_logs(db: AsyncSession, player_type: str = "all"):
+    """Fetches and upserts player game logs for all games"""
+    if player_type not in ["all", "skater", "goalie"]:
+        raise ValueError("Invalid player type. Must be 'all', 'skater', or 'goalie'.")
+
     game_logs = None
-    players = await get_all_skater_ids_and_teams(db)
-    for player in players:
-        game_logs = scrape_skater_game_data(player[0])
-        #upsert to db
-        if game_logs:
-            await upsert_scraped_game_logs(db, game_logs)
-
-async def fetch_recent_skater_game_logs(db: AsyncSession):
-    """Fetches and upserts skater game logs for recent games for a team by tri code."""
+    if player_type in ["all", "skater"]:    
+        players = await get_all_skater_ids_and_teams(db)
+        for player in players:
+            game_logs = scrape_skater_game_data(player[0])
+            #upsert to db
+            if game_logs:
+                await upsert_scraped_game_logs(db, game_logs)
     game_logs = None
-    players = await get_all_skaters_on_a_roster(db)
-    for player in players:
-        player_id = player[0]
-        tri_code = player[1]
-
-        # date as int YYYYMMDD
-        latest_game = None
-        if tri_code:
-            latest_game = await get_date_most_recent_game_played(db, tri_code)
-
-        if latest_game:
-            #convert to utc dtime YYYYMMDD int to datetime with utc timezone
-            latest_game_datetime = datetime.datetime.strptime(str(latest_game), "%Y%m%d").replace(tzinfo=datetime.timezone.utc)
-
-        skater_info = await get_player_most_recent_game_date_and_last_updated(db, player_id)
-        if skater_info:
-            latest_game_log_date = skater_info[0]
-            last_updated = skater_info[1]
-
-            if latest_game and \
-                (latest_game > latest_game_log_date) and \
-                (latest_game_datetime > last_updated):
-                # scrape just recent logs
-                game_logs = scrape_skater_game_data(player_id, latest_game)
-
-        else:
-            #scrape all if player has no game logs in db
-            game_logs = scrape_skater_game_data(player_id)
-
-        #upsert to db
-        if game_logs:
-            await upsert_scraped_game_logs(db, game_logs)
-
-async def fetch_goalie_all_game_logs_for_recent_games(db: AsyncSession):
-    """Fetches and upserts goalie game logs for recent games for a team by tri code."""
+    if player_type in ["all", "goalie"]:
+        players = await get_all_goalie_ids_and_teams(db)
+        for player in players:
+            game_logs = scrape_goalie_game_data(player[0])
+            #upsert to db
+            if game_logs:
+                await upsert_scraped_goalie_game_logs(db, game_logs)
     
-    #get all tri codes
-    tri_codes = await get_all_tri_codes_in_db(db)
-    for tri_code in tri_codes:
-        # date as int YYYYMMDD
-        latest_game: int = await get_date_most_recent_game_played(db, tri_code)
-        if latest_game:
-            #convert to utc dtime YYYYMMDD int to datetime with utc timezone
-            latest_game_datetime = datetime.datetime.strptime(str(latest_game), "%Y%m%d").replace(tzinfo=datetime.timezone.utc)
 
+async def fetch_recent_player_game_logs(db: AsyncSession, player_type: str = "all"):
+    """Fetches and upserts player game logs for recent games for a team by tri code."""
+    if player_type not in ["all", "skater", "goalie"]:
+        raise ValueError("Invalid player type. Must be 'all', 'skater', or 'goalie'.")
+    
+    #get all teams most recent game date played
+    most_recent_games_team_int = await get_all_teams_most_recent_game_dates(db)
+    most_recent_games_team_dt = {}
+    #modify to datetime with utc timezone 
+    for tri_code, game_date in most_recent_games_team_int.items():
+        try: 
+            datetime_game_date = datetime.datetime.strptime(str(game_date), "%Y%m%d").replace(tzinfo=datetime.timezone.utc)
+            most_recent_games_team_dt[tri_code] = datetime_game_date
+        except Exception as e:
+            print(f"Error converting game date for team {tri_code}: {e}")
+            most_recent_games_team_dt[tri_code] = None
 
     game_logs = None
-    players = await get_all_goalie_ids_and_teams(db)
-    for player in players:
-        player_id = player[0]
-        tri_code = player[1]
+    if player_type in ["all", "skater"]:
+        players = await get_all_skaters_on_a_roster(db)
+        for player in players:
+            player_id = player[0]
+            tri_code = player[1]
+            latest_game_int = most_recent_games_team_int.get(tri_code)
+            latest_game_datetime = most_recent_games_team_dt.get(tri_code)
 
-        # date as int YYYYMMDD
-        latest_game: int = await get_date_most_recent_game_played(db, tri_code)
-        if latest_game:
-            #convert to utc dtime YYYYMMDD int to datetime with utc timezone
-            latest_game_datetime = datetime.datetime.strptime(str(latest_game), "%Y%m%d").replace(tzinfo=datetime.timezone.utc)
+            skater_info = await get_player_most_recent_game_date_and_last_updated(db, player_id)
+            if skater_info:
+                latest_game_log_date = skater_info[0]
+                last_updated = skater_info[1]
 
-        goalie_info = await get_goalie_most_recent_game_date_and_last_updated(db, player_id)
-        if goalie_info:
-            latest_game_log_date = goalie_info[0]
-            last_updated = goalie_info[1]
+                if latest_game_int and \
+                    (latest_game_int > latest_game_log_date) and \
+                    (latest_game_datetime > last_updated):
+                    # scrape just recent logs
+                    game_logs = scrape_skater_game_data(player_id, latest_game_int)
 
-            if latest_game and \
-                (latest_game > latest_game_log_date) and \
-                (latest_game_datetime > last_updated):
-                # scrape just recent logs
-                game_logs = scrape_goalie_game_data(player_id, latest_game)
-        else:
-            #scrape all if player has no game logs in db
-            game_logs = scrape_goalie_game_data(player_id)
+            else:
+                #scrape all if player has no game logs in db
+                game_logs = scrape_skater_game_data(player_id)
 
-        #upsert to db
-        if game_logs:
-            for game_log in game_logs:
-                await upsert_scraped_goalie_game_log(db, game_log)
+            #upsert to db
+            if game_logs:
+                await upsert_scraped_game_logs(db, game_logs)
+
+    game_logs = None
+    if player_type in ["all", "goalie"]:
+        players = await get_all_goalies_on_a_roster(db)
+        for player in players:
+            player_id = player[0]
+            tri_code = player[1]
+            latest_game_int = most_recent_games_team_int.get(tri_code)
+            latest_game_datetime = most_recent_games_team_dt.get(tri_code)
+
+            goalie_info = await get_goalie_most_recent_game_date_and_last_updated(db, player_id)
+            if goalie_info:
+                latest_game_log_date = goalie_info[0]
+                last_updated = goalie_info[1]
+
+                if latest_game_int and \
+                    (latest_game_int > latest_game_log_date) and \
+                    (latest_game_datetime > last_updated):
+                    # scrape just recent logs
+                    game_logs = scrape_goalie_game_data(player_id, latest_game_int)
+
+            else:
+                #scrape all if player has no game logs in db
+                game_logs = scrape_goalie_game_data(player_id)
+
+            #upsert to db
+            if game_logs:
+                await upsert_scraped_goalie_game_logs(db, game_logs)

@@ -66,3 +66,9 @@ class GoalieGameLogGetOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+class SkaterSeasonBasicStatsGetOut(BaseModel):
+    games: int
+    goals: int
+    assists: int
+    points: int

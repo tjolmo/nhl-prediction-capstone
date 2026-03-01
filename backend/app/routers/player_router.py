@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException
 from app.dependencies import get_db
-from app.schemas.player import PlayerGameLogAddOut, PlayerGameLogGetOut, GoalieGameLogGetOut
+from app.schemas.player import PlayerGameLogAddOut, PlayerGameLogGetOut, GoalieGameLogGetOut, SkaterSeasonBasicStatsGetOut
 from app.crud.players import get_skater_by_id, update_player_game_log_last_updated, get_goalie_by_id
-from app.crud.skater_game_logs import upsert_scraped_game_logs, get_player_game_log_by_game_and_player_id
-from app.crud.goalie_game_logs import upsert_scraped_goalie_game_log, get_goalie_game_log_by_game_and_player_id
+from app.crud.skater_game_logs import upsert_scraped_game_logs, get_player_game_log_by_game_and_player_id, get_skater_season_basic_stats_from_db
+from app.crud.goalie_game_logs import upsert_scraped_goalie_game_logs
 from external.moneypuck.player import scrape_skater_game_data, scrape_goalie_game_data
 from external.nhl.games import fetch_and_get_players_in_a_game
 
@@ -35,7 +35,7 @@ async def add_goalie_game_logs(player_id: int, db = Depends(get_db)):
     if game_logs:
         num_game_logs_added = 0
         for game_log in game_logs:
-            await upsert_scraped_goalie_game_log(db, game_log)
+            await upsert_scraped_goalie_game_logs(db, game_log)
             num_game_logs_added += 1
         await update_player_game_log_last_updated(db, player_id)
         return PlayerGameLogAddOut(player_id=player_id, game_logs_added=num_game_logs_added)
@@ -76,3 +76,15 @@ async def get_players_in_a_game(game_id: int):
             raise HTTPException(status_code=404, detail=f"Players for game {game_id} not found in external API")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error retrieving players for game {game_id} from external API: {e}")
+
+@router.get("skater/{player_id}/basic_stats/{season}", status_code=200, response_model=SkaterSeasonBasicStatsGetOut)
+async def get_skater_season_basic_stats(player_id: int, season: int, db = Depends(get_db)):
+    """Fetches basic season stats for a skater by player ID and season."""
+    try:
+        stats = await get_skater_season_basic_stats_from_db(db, player_id, season)
+        if stats:
+            return SkaterSeasonBasicStatsGetOut(games=stats["games"], goals=stats["goals"], assists=stats["assists"], points=stats["points"])
+        else:
+            raise HTTPException(status_code=404, detail=f"Season {season} stats for skater {player_id} not found in DB")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error retrieving season {season} stats for skater {player_id} from DB: {e}")

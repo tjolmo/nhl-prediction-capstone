@@ -70,6 +70,20 @@ async def get_date_most_recent_game_played(db: AsyncSession, tri_code: str) -> i
     game_date = result.scalar_one_or_none()
     return game_date
 
+async def get_all_teams_most_recent_game_dates(db: AsyncSession) -> dict[str, int]:
+    """Fetches most recent game played from db for all teams by tri code."""
+    result = await db.execute(
+        select(Games.home_team_tri_code, Games.date).
+        where(Games.game_state == "OFF").
+        order_by(Games.date.desc())
+    )
+    games = result.all()
+    most_recent_game_dates = {}
+    for tri_code, date in games:
+        if tri_code not in most_recent_game_dates:
+            most_recent_game_dates[tri_code] = date
+    return most_recent_game_dates
+
 async def get_next_game_info_by_tri_code(db: AsyncSession, tri_code: str) -> Games | None:
     """Fetches next game info from db for a team by tri code."""
     result = await db.execute(

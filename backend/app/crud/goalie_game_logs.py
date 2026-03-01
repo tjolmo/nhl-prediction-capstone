@@ -5,10 +5,12 @@ from ..models import GoalieGameLog
 from external.moneypuck.response_models import GoalieGameLogResponse
 import datetime
 
-async def upsert_scraped_goalie_game_log(db: AsyncSession, game_log_data: GoalieGameLogResponse):
-    """Upserts scraped game game log into local db GoalieGameLogs table."""
-    data = game_log_data.model_dump()
-    stmt = insert(GoalieGameLog).values(**data)
+async def upsert_scraped_goalie_game_logs(db: AsyncSession, game_logs_data: list[GoalieGameLogResponse]):
+    """Upserts scraped goale game logs into local db GoalieGameLogs table."""
+    if not game_logs_data:
+        return
+    data = [log.model_dump() for log in game_logs_data]
+    stmt = insert(GoalieGameLog).values(data)
     stmt = stmt.on_conflict_do_update(
         index_elements=['game_id', 'player_id'],
         set_={
@@ -69,3 +71,15 @@ async def get_goalie_most_recent_game_date_and_last_updated(db: AsyncSession, pl
     )
     game_date_and_last_updated = result.one_or_none()
     return game_date_and_last_updated
+
+async def get_all_goalies_need_update(db: AsyncSession, team_tri_code: str, latest_game_date: int) -> list[tuple[int, str]]:
+    """Fetches all goalie IDs w team from the database that need game log updates."""
+    # filter to most recent game log for goalie
+    result = await db.execute(
+        select(GoalieGameLog.player_id, GoalieGameLog.player_team_tricode).
+        where(
+            GoalieGameLog.player_team_tricode == team_tri_code,
+            GoalieGameLog.game_date == latest_game_date
+        ).
+        order_by(GoalieGameLog.game_date.desc())
+    )

@@ -5,8 +5,7 @@ from .routers import teams_router, player_router
 from .database import AsyncSessionLocal
 from .schedules import (add_current_teams_to_db, add_old_teams_to_db, fetch_current_rosters_for_all_teams, 
                         fetch_current_schedules_for_all_teams, fetch_past_two_seasons_schedules_for_all_teams, 
-                        fetch_all_skater_game_logs, fetch_recent_skater_game_logs,
-                        fetch_goalie_all_game_logs_for_recent_games)
+                        fetch_all_player_game_logs, fetch_recent_player_game_logs)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -18,8 +17,8 @@ async def lifespan(app: FastAPI):
         await fetch_current_schedules_for_all_teams(db)
         #await fetch_past_two_seasons_schedules_for_all_teams(db)
         await fetch_current_rosters_for_all_teams(db)
-        #await fetch_all_skater_game_logs(db)
-        await fetch_recent_skater_game_logs(db)
+        #await fetch_all_player_game_logs(db, "goalie")
+        await fetch_recent_player_game_logs(db)
         #await fetch_skater_all_game_logs_for_recent_games(db)
         #await fetch_goalie_all_game_logs_for_recent_games(db)
 

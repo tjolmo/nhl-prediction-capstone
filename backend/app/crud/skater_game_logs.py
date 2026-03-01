@@ -57,3 +57,31 @@ async def get_player_most_recent_game_date_and_last_updated(db: AsyncSession, pl
     game_date_and_last_updated = result.one_or_none()
     return game_date_and_last_updated
 
+async def get_skater_season_basic_stats_from_db(db: AsyncSession, player_id: int, season: int) -> dict | None:
+    """Fetches skater season stats from db for a player by player ID and season."""
+    result = await db.execute(
+        select(
+            SkaterGameLog.goals,
+            SkaterGameLog.primary_assists,
+            SkaterGameLog.secondary_assists,
+            SkaterGameLog.points,
+        ).
+        where(
+            SkaterGameLog.player_id == player_id,
+            SkaterGameLog.season == season
+        )
+    )
+    season_stats = result.all()
+    #accumulate stats for season
+    if season_stats:
+        games = len(season_stats)
+        goals = sum([stat[0] for stat in season_stats])
+        assists = sum([stat[1] + stat[2] for stat in season_stats])
+        points = sum([stat[3] for stat in season_stats])
+        return {
+            "games": games,
+            "goals": goals,
+            "assists": assists,
+            "points": points
+        }
+    return None
