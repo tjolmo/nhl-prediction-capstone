@@ -112,6 +112,20 @@ async def get_next_game_info_by_tri_code(db: AsyncSession, tri_code: str) -> Gam
     game = result.scalar_one_or_none()
     return game
 
+async def get_next_n_games_info_by_tri_code(db: AsyncSession, tri_code: str, n: int) -> list[Games]:
+    """Fetches next n games info from db for a team by tri code."""
+    result = await db.execute(
+        select(Games).
+        where(
+            (Games.home_team_tri_code == tri_code) | (Games.away_team_tri_code == tri_code),
+            (Games.game_state == "FUT")
+        ).
+        order_by(Games.date.asc()).
+        limit(n)
+    )
+    games = result.scalars().all()
+    return games
+
 async def check_if_games_in_db(db: AsyncSession, game_ids: list[int]) -> list[int]:
     """Checks if games are in db by game IDs."""
     result = await db.execute(

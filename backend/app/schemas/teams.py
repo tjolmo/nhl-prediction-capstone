@@ -51,4 +51,14 @@ class NextGameInfoOut(BaseModel):
 class TeamBasicInfoOut(BaseModel):
     name: str
     tricode: str
-    logoURL: str | None
+    logoUrl: str | None
+
+class TeamScheduledGameInfoOut(BaseModel):
+    id: int
+    date: str
+    homeTeam: TeamBasicInfoOut
+    awayTeam: TeamBasicInfoOut
+    predictedScore: dict = {"home": 0, "away": 0} # temporary until model
+    time: datetime.datetime
+    venue: str
+    isNextGame: bool
