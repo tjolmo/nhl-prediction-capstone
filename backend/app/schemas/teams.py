@@ -1,3 +1,5 @@
+import datetime
+
 from pydantic import BaseModel
 
 class TeamInfoOut(BaseModel):
@@ -37,3 +39,11 @@ class Last5GameInfoOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+class NextGameInfoOut(BaseModel):
+    game_id: int
+    date: datetime.date
+    home_team_tri_code: str
+    away_team_tri_code: str
+    start_time: datetime.datetime
+    venue: str

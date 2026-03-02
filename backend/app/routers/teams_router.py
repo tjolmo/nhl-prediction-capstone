@@ -1,34 +1,15 @@
+import datetime
+
 from fastapi import APIRouter, Depends, HTTPException
 from app.dependencies import get_db
-from external.nhl.games import fetch_and_get_players_in_a_game
-from external.nhl.players import fetch_and_get_players_info
-from external.nhl.teams import fetch_and_clean_team, fetch_and_clean_team_roster, fetch_and_clean_team_schedule
+from external.nhl.teams import fetch_and_clean_team, fetch_and_clean_team_roster
 from app.crud.teams import upsert_team, get_team_by_id, check_tri_code_exists, update_team_roster_last_updated
 from app.crud.team_history import upsert_team_history
-from app.crud.games import get_date_most_recent_game_marked_as_future, upsert_scraped_game_from_schedule, get_team_last_5_games, get_next_game_info_by_tri_code
-from app.schemas.teams import TeamInfoOut, TeamRosterAddOut, TeamScheduleAddOut, Last5GameInfoOut
-from app.crud.players import get_players_not_in_db, upsert_scraped_player
+from app.crud.games import get_date_most_recent_game_marked_as_future, get_team_last_5_games, get_next_game_info_by_tri_code
+from app.schemas.teams import NextGameInfoOut, TeamInfoOut, TeamRosterAddOut, Last5GameInfoOut
+from app.crud.players import upsert_scraped_player
 
 router = APIRouter(prefix="/teams", tags=["teams"])
-
-@router.post("/add/current/{team_id}", status_code=200, response_model=TeamInfoOut)
-async def add_current_team_data(team_id: int, db = Depends(get_db)):
-    team_data, team_history_data = await fetch_and_clean_team(team_id)
-    if team_data and team_history_data:
-        await upsert_team(db, team_data)
-        await upsert_team_history(db, team_history_data)
-        return TeamInfoOut(id=team_history_data.id, name=team_data.current_name, franchise_id=team_data.franchise_id, tri_code=team_data.tri_code)
-    raise HTTPException(status_code=404, detail=f"Team {team_id} not found in external API")
-
-@router.get("/get/{team_id}", response_model=TeamInfoOut, status_code=200)
-async def get_stored_team_data(team_id: int, db = Depends(get_db)):
-    try: 
-        team_data = await get_team_by_id(db, team_id)
-        if team_data:
-            return team_data
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error retrieving team {team_id} from DB: {e}")
-    raise HTTPException(status_code=404, detail=f"Team {team_id} not found in DB")
 
 @router.post("/add/roster/{tri_code}/{season}", status_code=200, response_model=TeamRosterAddOut)
 async def add_team_roster(tri_code: str, season: str, db = Depends(get_db)):
@@ -65,18 +46,24 @@ async def get_next_game_date(tri_code: str, db = Depends(get_db)):
         return {"next_game_date": next_game}
     raise HTTPException(status_code=404, detail=f"No future games found for Team {tri_code} in DB")
 
-@router.get("/nextgame/info/{tri_code}", status_code=200)
+@router.get("/nextgame/info/{tri_code}", status_code=200, response_model=NextGameInfoOut)
 async def get_next_game_info(tri_code: str, db = Depends(get_db)):
     if not await check_tri_code_exists(db, tri_code):
         raise HTTPException(status_code=404, detail=f"Team {tri_code} not found in DB")
     next_game = await get_next_game_info_by_tri_code(db, tri_code)
     if next_game is not None:
-        return {
-            "game_id": next_game.id,
-            "date": next_game.date,
-            "home_team_tri_code": next_game.home_team_tri_code,
-            "away_team_tri_code": next_game.away_team_tri_code,
-            "venue": next_game.venue,
-            "start_time": next_game.start_time
-        }
+        try:
+            #date is int YYYYMMDD, convert to datetime without time
+            next_game.date = datetime.datetime.strptime(str(next_game.date), "%Y%m%d").date()
+        except Exception as e:
+            print(f"Error converting game date for team {tri_code}: {e}")
+
+        return NextGameInfoOut(
+            game_id=next_game.id,
+            date=next_game.date,
+            home_team_tri_code=next_game.home_team_tri_code,
+            away_team_tri_code=next_game.away_team_tri_code,
+            venue=next_game.venue,
+            start_time=next_game.start_time
+        )
     raise HTTPException(status_code=404, detail=f"No future games found for Team {tri_code} in DB") 

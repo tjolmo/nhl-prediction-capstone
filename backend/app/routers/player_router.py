@@ -9,7 +9,6 @@ from external.nhl.games import fetch_and_get_players_in_a_game
 
 router = APIRouter(prefix="/players", tags=["players"])
 
-@router.post("/add/skater/game_logs/{player_id}", status_code=200, response_model=PlayerGameLogAddOut)
 async def add_skater_game_logs(player_id: int, db = Depends(get_db)):
     """Adds scraped player game logs to DB for a given player ID. Three seasons default"""
     player_exists = await get_skater_by_id(db, player_id)
@@ -65,19 +64,7 @@ async def get_player_game_log(game_id: int, player_id: int, db = Depends(get_db)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error retrieving game log for goalie {player_id} and game {game_id} from DB: {e}")
 
-@router.get("/game/{game_id}/players", status_code=200, response_model=list[int])
-async def get_players_in_a_game(game_id: int):
-    """Fetches list of player IDs for a given game ID."""
-    try:
-        player_ids = await fetch_and_get_players_in_a_game(game_id)
-        if player_ids:
-            return player_ids
-        else:
-            raise HTTPException(status_code=404, detail=f"Players for game {game_id} not found in external API")
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error retrieving players for game {game_id} from external API: {e}")
-
-@router.get("skater/{player_id}/basic_stats/{season}", status_code=200, response_model=SkaterSeasonBasicStatsGetOut)
+@router.get("/skater/{player_id}/basic_stats/{season}", status_code=200, response_model=SkaterSeasonBasicStatsGetOut)
 async def get_skater_season_basic_stats(player_id: int, season: int, db = Depends(get_db)):
     """Fetches basic season stats for a skater by player ID and season."""
     try:
