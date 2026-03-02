@@ -37,6 +37,12 @@ async def get_goalie_by_id(db: AsyncSession, player_id: int) -> Player | None:
     player = result.scalar_one_or_none()
     return player
 
+async def get_player_by_id(db: AsyncSession, player_id: int) -> Player | None:
+    """Fetches player from db by ID."""
+    result = await db.execute(select(Player).where(Player.id == player_id))
+    player = result.scalar_one_or_none()
+    return player
+
 async def update_player_game_log_last_updated(db: AsyncSession, player_id: int):
     """Updates the game_log_last_updated field for a player."""
     stmt = (
@@ -65,7 +71,7 @@ async def get_all_skaters_on_a_roster(db: AsyncSession) -> list[tuple[int, str]]
             Player.position != "G"
         )
     )
-    players = result.scalars().all()
+    players = result.all()
     return players
 
 async def get_all_goalies_on_a_roster(db: AsyncSession) -> list[tuple[int, str]]:
@@ -76,7 +82,7 @@ async def get_all_goalies_on_a_roster(db: AsyncSession) -> list[tuple[int, str]]
             Player.position == "G"
         )
     )
-    players = result.scalars().all()
+    players = result.all()
     return players
 
 async def get_all_goalie_ids_and_teams(db: AsyncSession) -> list[tuple[int, str]]:

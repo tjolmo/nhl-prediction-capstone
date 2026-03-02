@@ -59,3 +59,9 @@ async def update_team_roster_last_updated(db: AsyncSession, tri_code: str):
     )
     await db.execute(stmt)
     await db.commit()
+
+async def get_team_by_tri_code(db: AsyncSession, tri_code: str) -> Team | None:
+    """Fetches team basic info from db by tri code."""
+    result = await db.execute(select(Team).where(Team.tri_code == tri_code))
+    team = result.scalar_one_or_none()
+    return team

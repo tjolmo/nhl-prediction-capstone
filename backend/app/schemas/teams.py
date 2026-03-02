@@ -47,3 +47,8 @@ class NextGameInfoOut(BaseModel):
     away_team_tri_code: str
     start_time: datetime.datetime
     venue: str
+
+class TeamBasicInfoOut(BaseModel):
+    name: str
+    tricode: str
+    logoURL: str | None

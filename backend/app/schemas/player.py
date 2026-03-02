@@ -1,3 +1,5 @@
+import datetime
+
 from pydantic import BaseModel
 
 class PlayerGameLogAddOut(BaseModel):
@@ -74,10 +76,36 @@ class SkaterSeasonBasicStatsGetOut(BaseModel):
     points: int
 
 class SkaterLast5BasicStatsGetOut(BaseModel):
-    date: int
+    date: str | None
     opposing_team_tricode: str
     goals: int
     assists: int
     points: int
     home_away: str
 
+class PlayerBasicInfoOut(BaseModel):
+    name: str
+    number: int | None
+    position: str
+    team: str
+    headshotUrl: str
+
+class PlayerNextGameGetOut(BaseModel):
+    date: str | None
+    opposing_team_tricode: str
+    venue: str
+    time: datetime.datetime
+    home_away: str
+
+class GoalieLast5BasicStatsGetOut(BaseModel):
+    date: str | None
+    opposing_team_tricode: str
+    saves: int
+    goals_against: int
+    save_percentage: float
+    home_away: str
+
+class GoalieSeasonBasicStatsGetOut(BaseModel):
+    games: int
+    gaa: float
+    save_percentage: float
