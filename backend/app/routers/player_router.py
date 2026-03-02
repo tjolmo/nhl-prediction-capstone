@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from app.dependencies import get_db
-from app.schemas.player import PlayerGameLogAddOut, PlayerGameLogGetOut, GoalieGameLogGetOut, SkaterSeasonBasicStatsGetOut
+from app.schemas.player import PlayerGameLogAddOut, PlayerGameLogGetOut, GoalieGameLogGetOut, SkaterLast5BasicStatsGetOut, SkaterSeasonBasicStatsGetOut
 from app.crud.players import get_skater_by_id, update_player_game_log_last_updated, get_goalie_by_id
-from app.crud.skater_game_logs import upsert_scraped_game_logs, get_player_game_log_by_game_and_player_id, get_skater_season_basic_stats_from_db
+from app.crud.skater_game_logs import get_skater_last_5_basic_stats_from_db, upsert_scraped_game_logs, get_player_game_log_by_game_and_player_id, get_skater_season_basic_stats_from_db
 from app.crud.goalie_game_logs import upsert_scraped_goalie_game_logs
 from external.moneypuck.player import scrape_skater_game_data, scrape_goalie_game_data
 from external.nhl.games import fetch_and_get_players_in_a_game
@@ -75,3 +75,22 @@ async def get_skater_season_basic_stats(player_id: int, season: int, db = Depend
             raise HTTPException(status_code=404, detail=f"Season {season} stats for skater {player_id} not found in DB")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error retrieving season {season} stats for skater {player_id} from DB: {e}")
+
+@router.get("/skater/{player_id}/last_5/basic_stats", status_code=200, response_model=list[SkaterLast5BasicStatsGetOut])
+async def get_skater_last_5_basic_stats(player_id: int, db = Depends(get_db)):
+    """Fetches basic stats for a skater's last 5 games by player ID."""
+    try:
+        stats = await get_skater_last_5_basic_stats_from_db(db, player_id)
+        if stats:
+            return [SkaterLast5BasicStatsGetOut(
+                date=stat["game_date"],
+                opposing_team_tricode=stat["opposing_team_tricode"],
+                goals=stat["goals"],
+                assists=stat["assists"],
+                points=stat["points"],
+                home_away=stat["home_away"]
+            ) for stat in stats]
+        else:
+            raise HTTPException(status_code=404, detail=f"Last 5 games stats for skater {player_id} not found in DB")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error retrieving last 5 games stats for skater {player_id} from DB: {e}")

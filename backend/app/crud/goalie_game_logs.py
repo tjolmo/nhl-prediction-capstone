@@ -83,3 +83,55 @@ async def get_all_goalies_need_update(db: AsyncSession, team_tri_code: str, late
         ).
         order_by(GoalieGameLog.game_date.desc())
     )
+
+
+async def get_goalie_season_basic_stats_from_db(db: AsyncSession, player_id: int, season: int) -> dict | None:
+    """Fetches goalie season stats from db for a player by player ID and season."""
+    result = await db.execute(
+        select(
+            GoalieGameLog.goals_against,
+            GoalieGameLog.sog, 
+        ).
+        where(
+            GoalieGameLog.player_id == player_id,
+            GoalieGameLog.season == season
+        )
+    )
+    season_stats = result.all()
+    #accumulate stats for season
+    if season_stats:
+        games = len(season_stats)
+        gaa = sum([stat[0] for stat in season_stats]) / games
+        save_percentage = 1 - (sum([stat[0] for stat in season_stats]) / sum([stat[1] for stat in season_stats]))
+        return {
+            "games": games,
+            "gaa": gaa,
+            "save_percentage": save_percentage
+        }
+    return None
+
+async def get_goalie_last_5_basic_stats_from_db(db: AsyncSession, player_id: int) -> list[dict] | None:
+    """Fetches goalie last 5 games stats from db for a player by player ID."""
+    result = await db.execute(
+        select(
+            GoalieGameLog.game_date,
+            GoalieGameLog.opposing_team_tricode,
+            GoalieGameLog.goals_against,
+            GoalieGameLog.sog, 
+            GoalieGameLog.home_away
+        ).
+        where(GoalieGameLog.player_id == player_id).
+        order_by(GoalieGameLog.game_date.desc()).
+        limit(5)
+    )
+    last_5_stats = result.all()
+    if last_5_stats:
+        return [{
+            "date": stat[0],
+            "opposing_team_tricode": stat[1],
+            "goals_against": stat[2],
+            "saves": stat[3],
+            "save_percentage": 1 - (stat[2] / stat[3]) if stat[3] > 0 else None,
+            "home_away": stat[4]
+        } for stat in last_5_stats]
+    return None

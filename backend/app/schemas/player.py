@@ -72,3 +72,12 @@ class SkaterSeasonBasicStatsGetOut(BaseModel):
     goals: int
     assists: int
     points: int
+
+class SkaterLast5BasicStatsGetOut(BaseModel):
+    date: int
+    opposing_team_tricode: str
+    goals: int
+    assists: int
+    points: int
+    home_away: str
+

@@ -85,3 +85,30 @@ async def get_skater_season_basic_stats_from_db(db: AsyncSession, player_id: int
             "points": points
         }
     return None
+
+async def get_skater_last_5_basic_stats_from_db(db: AsyncSession, player_id: int) -> list[dict] | None:
+    """Fetches skater last 5 games stats from db for a player by player ID."""
+    result = await db.execute(
+        select(
+            SkaterGameLog.game_date,
+            SkaterGameLog.opposing_team_tricode,
+            SkaterGameLog.goals,
+            SkaterGameLog.primary_assists,
+            SkaterGameLog.secondary_assists,
+            SkaterGameLog.points,
+            SkaterGameLog.home_away,
+        ).where(SkaterGameLog.player_id == player_id).order_by(SkaterGameLog.game_date.desc()).limit(5)
+    )
+    last_5 = result.all()
+    if last_5:
+        return [
+            {
+                "game_date": game[0],
+                "opposing_team_tricode": game[1],
+                "goals": game[2],
+                "assists": game[3] + game[4],
+                "points": game[5],
+                "home_away": game[6]
+            } for game in last_5
+        ]
+    return None
