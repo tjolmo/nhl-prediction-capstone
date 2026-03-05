@@ -2,6 +2,7 @@ from pydantic import BaseModel, Field
 from datetime import datetime
 
 class SkaterGameLogResponse(BaseModel):
+    """Response model for a Skater's game log data from MoneyPuck API"""
     game_id: int = Field(alias="gameId")
     player_id: int = Field(alias="playerId")
     season: int = Field(alias="season")
@@ -25,6 +26,7 @@ class SkaterGameLogResponse(BaseModel):
         validate_by_name = True
 
 class GoalieGameLogResponse(BaseModel):
+    """Response model for a Goalie's game log data from MoneyPuck API"""
     game_id: int = Field(alias="gameId")
     player_id: int = Field(alias="playerId")
     season: int = Field(alias="season")

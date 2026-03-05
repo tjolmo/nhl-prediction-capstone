@@ -17,6 +17,7 @@ async def fetch_and_clean_team(team_id: int) -> tuple[TeamResponse, TeamHistoryR
             return None
 
 async def fetch_and_clean_team_roster(team_tricode: str, season: str="current") -> list[PlayerResponse] | None:
+    """Scrapes team roster data from API, cleans, returns list of PlayerResponse."""
     base_url = f"https://api-web.nhle.com/v1/roster/{team_tricode}/{season}"
     async with httpx.AsyncClient() as client:
         try:
@@ -35,6 +36,8 @@ async def fetch_and_clean_team_roster(team_tricode: str, season: str="current") 
             return None
 
 async def fetch_and_clean_team_schedule(team_tricode: str, season: str="now") -> list[GameResponse] | None:
+    """Scrapes team schedule data from API, cleans, returns list of GameResponse."""
+    """Default is current season, but can also pass in a specific season in format '20222023'."""
     base_url = f"https://api-web.nhle.com/v1/club-schedule-season/{team_tricode}/{season}"
     async with httpx.AsyncClient() as client:
         try:

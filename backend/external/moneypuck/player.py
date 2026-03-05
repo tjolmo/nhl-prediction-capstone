@@ -2,6 +2,7 @@ import pandas as pd
 from .response_models import SkaterGameLogResponse, GoalieGameLogResponse
 
 def scrape_skater_game_data(player_id: int, start_date: int|None = None) -> list[SkaterGameLogResponse] | None:
+    """Scrapes game log data for a skater from Moneypuck, cleans, returns list of SkaterGameLogResponse."""
     csv_url = f"https://moneypuck.com/moneypuck/playerData/careers/gameByGame/regular/skaters/{player_id}.csv"
     cols= [
         'playerId', 'season', 'name', 'gameId', 'home_or_away',
@@ -33,6 +34,7 @@ def scrape_skater_game_data(player_id: int, start_date: int|None = None) -> list
         return None
 
 def scrape_goalie_game_data(player_id: int, start_date: int|None = None) -> list[GoalieGameLogResponse] | None:
+    """Scrapes game log data for a goalie from Moneypuck, cleans, returns list of GoalieGameLogResponse."""
     csv_url = f"https://moneypuck.com/moneypuck/playerData/careers/gameByGame/regular/goalies/{player_id}.csv"
     cols= [
         'playerId', 'season', 'name', 'gameId', 'home_or_away',

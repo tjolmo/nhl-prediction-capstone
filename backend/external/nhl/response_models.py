@@ -2,6 +2,7 @@ from pydantic import BaseModel, Field, field_validator
 import datetime
 
 class TeamResponse(BaseModel):
+    """NHL API Response for Team Information"""
     current_name: str = Field(alias="fullName")
     franchise_id: int = Field(alias="franchiseId")
     tri_code: str = Field(alias="triCode")
@@ -9,11 +10,13 @@ class TeamResponse(BaseModel):
         validate_by_name = True
 
 class TeamHistoryResponse(BaseModel):
+    """NHL API Response for Team with just History Information extracted"""
     id: int = Field(alias="id")
     name: str = Field(alias="fullName")
     tri_code: str = Field(alias="triCode")
 
 class PlayerResponse(BaseModel):
+    """NHL API Response for Player Information"""
     id: int = Field(alias="id")
     headshot: str | None = Field(alias="headshot")
     first_name: str = Field(alias="firstName")
@@ -33,6 +36,8 @@ class PlayerResponse(BaseModel):
         validate_by_name = True
 
 class PlayerLandingResponse(BaseModel):
+    """NHL API Response for Player Landing Page Information"""
+    # kept separate from PlayerResponse in case info changes later on in time
     id: int = Field(alias="playerId")
     headshot: str | None = Field(alias="headshot")
     first_name: str = Field(alias="firstName")
@@ -52,6 +57,7 @@ class PlayerLandingResponse(BaseModel):
         validate_by_name = True
 
 class GameResponse(BaseModel):
+    """NHL API Response for Game Information"""
     id: int = Field(alias="id")
     home_team_tri_code: str = Field(alias="homeTeam")
     away_team_tri_code: str = Field(alias="awayTeam")
