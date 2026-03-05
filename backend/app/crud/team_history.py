@@ -6,6 +6,7 @@ from external.nhl.response_models import TeamHistoryResponse
 import datetime
 
 async def upsert_team_history(db: AsyncSession, team_history_data: TeamHistoryResponse):
+    #CHange to bulk upsert later
     """Upserts scraped team history data into local db TeamHistory table."""
     data = team_history_data.model_dump()
     stmt = insert(TeamHistory).values(**data)

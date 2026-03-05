@@ -4,10 +4,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ..models import Games
 from external.nhl.response_models import GameResponse
 import datetime
-async def upsert_scraped_game_from_schedule(db: AsyncSession, game_data: GameResponse):
+async def upsert_scraped_games_from_schedule(db: AsyncSession, game_data: list[GameResponse]):
     """Upserts scraped game into local db Games table."""
-    data = game_data.model_dump()
-    stmt = insert(Games).values(**data)
+    if not game_data:
+        return
+    data = [game.model_dump() for game in game_data]
+    stmt = insert(Games).values(data)
     stmt = stmt.on_conflict_do_update(
         index_elements=['id'],
         set_={
@@ -55,34 +57,6 @@ async def get_date_most_recent_game_marked_as_future(db: AsyncSession, tri_code:
     )
     game = result.scalar_one_or_none()
     return game
-
-async def get_date_most_recent_game_not_completed(db: AsyncSession, tri_code: str) -> datetime.datetime | None:
-    """Fetches most recent game not completed from db for a team by tri code."""
-    result = await db.execute(
-        select(Games.start_time).
-        where(
-            (Games.home_team_tri_code == tri_code) | (Games.away_team_tri_code == tri_code),
-            (Games.game_state != "OFF")
-        ).
-        order_by(Games.date.asc()).
-        limit(1)
-    )
-    game = result.scalar_one_or_none()
-    return game
-
-async def get_date_most_recent_game_played(db: AsyncSession, tri_code: str) -> int | None:
-    """Fetches most recent game played from db for a team by tri code."""
-    result = await db.execute(
-        select(Games.date).
-        where(
-            (Games.home_team_tri_code == tri_code) | (Games.away_team_tri_code == tri_code),
-            (Games.game_state == "OFF")
-        ).
-        order_by(Games.date.desc()).
-        limit(1)
-    )
-    game_date = result.scalar_one_or_none()
-    return game_date
 
 async def get_all_teams_most_recent_game_dates(db: AsyncSession) -> dict[str, int]:
     """Fetches most recent game played from db for all teams by tri code."""

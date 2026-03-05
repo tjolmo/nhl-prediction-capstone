@@ -6,6 +6,7 @@ from external.nhl.response_models import TeamResponse
 import datetime
 
 async def upsert_team(db: AsyncSession, team_data: TeamResponse):
+    #change to bulk upsert later
     """Upserts scraped team into local db Teams table."""
     data = team_data.model_dump()
     stmt = insert(Team).values(**data)
@@ -18,12 +19,6 @@ async def upsert_team(db: AsyncSession, team_data: TeamResponse):
     )
     await db.execute(stmt)
     await db.commit()
-
-async def get_team_by_id(db: AsyncSession, team_id: int) -> Team | None:
-    """Fetches team from db by ID."""
-    result = await db.execute(select(Team).where(Team.id == team_id))
-    team = result.scalar_one_or_none()
-    return team
 
 async def check_tri_code_exists(db: AsyncSession, tri_code: str) -> bool:
     """Checks if a team with the given tri code exists in the database."""

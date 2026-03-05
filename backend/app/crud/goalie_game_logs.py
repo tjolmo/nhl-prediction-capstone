@@ -62,7 +62,7 @@ async def get_goalie_game_log_by_game_and_player_id(db: AsyncSession, game_id: i
 
 
 async def get_goalie_most_recent_game_date_and_last_updated(db: AsyncSession, player_id: int) -> tuple[int, datetime.datetime] | None:
-    """Fetches most recent game date from db for a goalie by player ID."""
+    """Fetches most recent game date and last updated from db for a goalie by player ID."""
     result = await db.execute(
         select(GoalieGameLog.game_date, GoalieGameLog.last_updated).
         where(GoalieGameLog.player_id == player_id).
@@ -71,19 +71,6 @@ async def get_goalie_most_recent_game_date_and_last_updated(db: AsyncSession, pl
     )
     game_date_and_last_updated = result.one_or_none()
     return game_date_and_last_updated
-
-async def get_all_goalies_need_update(db: AsyncSession, team_tri_code: str, latest_game_date: int) -> list[tuple[int, str]]:
-    """Fetches all goalie IDs w team from the database that need game log updates."""
-    # filter to most recent game log for goalie
-    result = await db.execute(
-        select(GoalieGameLog.player_id, GoalieGameLog.player_team_tricode).
-        where(
-            GoalieGameLog.player_team_tricode == team_tri_code,
-            GoalieGameLog.game_date == latest_game_date
-        ).
-        order_by(GoalieGameLog.game_date.desc())
-    )
-
 
 async def get_goalie_season_basic_stats_from_db(db: AsyncSession, player_id: int, season: int) -> dict | None:
     """Fetches goalie season stats from db for a player by player ID and season."""

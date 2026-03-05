@@ -6,6 +6,7 @@ from external.nhl.response_models import PlayerResponse, PlayerLandingResponse
 import datetime
 
 async def upsert_scraped_player(db: AsyncSession, player_data: PlayerResponse|PlayerLandingResponse, tri_code: str | None = None):
+    # Need to modify to bulk upsert
     """Upserts scraped player into local db Players table."""
     data = player_data.model_dump()
     data["current_team_tri_code"] = tri_code

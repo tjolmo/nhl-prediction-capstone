@@ -6,8 +6,8 @@ from external.nhl.teams import fetch_and_clean_team, fetch_and_clean_team_roster
 from external.nhl.games import fetch_and_get_players_in_a_game
 from external.moneypuck.player import scrape_skater_game_data, scrape_goalie_game_data
 from .crud.team_history import upsert_team_history, check_team_history_exists_and_updated
-from .crud.teams import get_all_tri_codes_in_db, upsert_team, get_all_tri_codes_update_roster, update_team_roster_last_updated
-from .crud.games import check_if_games_in_db, get_all_teams_most_recent_game_dates, get_date_most_recent_game_played, upsert_scraped_game_from_schedule, get_date_most_recent_game_marked_as_future
+from .crud.teams import get_all_tri_codes_in_db, upsert_team,update_team_roster_last_updated, get_all_tri_codes_update_roster
+from .crud.games import check_if_games_in_db, get_all_teams_most_recent_game_dates, upsert_scraped_games_from_schedule, get_date_most_recent_game_marked_as_future
 from .crud.players import get_all_goalie_ids_and_teams, get_all_skater_ids_and_teams, get_all_skaters_on_a_roster, get_players_not_in_db, upsert_scraped_player, set_all_other_players_current_team_tri_code_to_null, get_all_goalies_on_a_roster
 from .crud.skater_game_logs import get_player_most_recent_game_date_and_last_updated, upsert_scraped_game_logs
 from .crud.goalie_game_logs import upsert_scraped_goalie_game_logs
@@ -41,7 +41,7 @@ async def add_old_teams_to_db(db: AsyncSession):
             print(f"Team history for team ID {team_id} already exists in DB, skipping.")
 
 async def fetch_current_rosters_for_all_teams(db: AsyncSession):
-#    tri_codes = await get_all_tri_codes_update_roster(db)
+    tri_codes = await get_all_tri_codes_update_roster(db)
     tri_codes = await get_all_tri_codes_in_db(db)
     players_updated = []
     for tri_code in tri_codes:
@@ -62,8 +62,7 @@ async def fetch_current_schedules_for_all_teams(db: AsyncSession):
         if current_marked_upcoming_date is None or current_time >= current_marked_upcoming_date:
             schedule_data = await fetch_and_clean_team_schedule(tri_code, "now")
             if schedule_data:
-                for game in schedule_data:
-                    await upsert_scraped_game_from_schedule(db, game)
+                await upsert_scraped_games_from_schedule(db, schedule_data)
 
 async def fetch_all_season_schedules_for_all_teams(db: AsyncSession):
     tri_codes = await get_all_tri_codes_in_db(db)
@@ -94,8 +93,8 @@ async def fetch_all_season_schedules_for_all_teams(db: AsyncSession):
                     await upsert_scraped_player(db, player_info, None)
     
         # add every game to db after player scrape to ensure that players added first
-        for game in schedule_data_to_add:
-            await upsert_scraped_game_from_schedule(db, game)
+        if schedule_data_to_add:
+            await upsert_scraped_games_from_schedule(db, schedule_data_to_add)
 
 async def fetch_all_player_game_logs(db: AsyncSession, player_type: str = "all"):
     """Fetches and upserts player game logs for all games"""
