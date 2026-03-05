@@ -2,14 +2,8 @@ import datetime
 
 from pydantic import BaseModel
 
-class PlayerGameLogAddOut(BaseModel):
-    player_id: int
-    game_logs_added: int
-
-    class Config:
-        from_attributes = True
-
 class PlayerGameLogGetOut(BaseModel):
+    """Output model for a Skater's game log"""
     game_id: int
     player_id: int
     season: int
@@ -33,6 +27,7 @@ class PlayerGameLogGetOut(BaseModel):
         from_attributes = True
 
 class GoalieGameLogGetOut(BaseModel):
+    """Output model for a Goalie's game log"""
     game_id: int
     player_id: int
     season: int
@@ -70,12 +65,14 @@ class GoalieGameLogGetOut(BaseModel):
         from_attributes = True
 
 class SkaterSeasonBasicStatsGetOut(BaseModel):
+    """Output model for a Skater's season basic stats"""
     games: int
     goals: int
     assists: int
     points: int
 
 class SkaterLast5BasicStatsGetOut(BaseModel):
+    """Output model for a Skater's last 5 games basic stats"""
     date: str | None
     opposing_team_tricode: str
     goals: int
@@ -84,6 +81,7 @@ class SkaterLast5BasicStatsGetOut(BaseModel):
     home_away: str
 
 class PlayerBasicInfoOut(BaseModel):
+    """Output model for a player's basic info"""
     name: str
     number: int | None
     position: str
@@ -91,6 +89,7 @@ class PlayerBasicInfoOut(BaseModel):
     headshotUrl: str
 
 class PlayerNextGameGetOut(BaseModel):
+    """Output model for a player's upcoming game info"""
     date: str | None
     opposing_team_tricode: str
     venue: str
@@ -98,6 +97,7 @@ class PlayerNextGameGetOut(BaseModel):
     home_away: str
 
 class GoalieLast5BasicStatsGetOut(BaseModel):
+    """Output model for a Goalie's last 5 games basic stats"""
     date: str | None
     opposing_team_tricode: str
     saves: int
@@ -106,6 +106,7 @@ class GoalieLast5BasicStatsGetOut(BaseModel):
     home_away: str
 
 class GoalieSeasonBasicStatsGetOut(BaseModel):
+    """Output model for a Goalie's season basic stats"""
     games: int
     gaa: float
     save_percentage: float
