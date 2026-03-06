@@ -27,14 +27,14 @@ services:
       DATABASE_URL: ${DATABASE_URL}
 
   frontend:
-    build: ./frontend
+    build: ./vite-frontend
     container_name: react_frontend
     restart: always
-    command: npm start
+    command: npm run dev -- --host
     volumes:
-      - ./frontend:/app
+      - ./vite-frontend:/app
       - /app/node_modules
     ports:
-      - "3000:3000"
+      - "5173:5173"
     depends_on:
       - backend
