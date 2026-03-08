@@ -1,6 +1,6 @@
 import { useOutletContext } from "react-router-dom";
-import type { SkaterData, SkaterStatKey } from "../types/skater";
-import { PlayerPredictionCard } from "./PlayerPredictionCard";
+import type { SkaterData, SkaterStatKey } from "../../types/skater";
+import { PlayerPredictionCard } from "../player/PlayerPredictionCard";
 
 const statKeys: SkaterStatKey[] = ["goals", "assists", "points"];
 const trendColors: Record<SkaterStatKey, string> = {

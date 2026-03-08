@@ -1,5 +1,9 @@
-import {apiGet} from "./client";
+import { apiGet } from "./client";
 import type { TeamScheduledGame } from "../types/teams";
+import type { PlayerFullData } from "../types/player";
 
 export const getTeamNextFiveGames = (tricode: string) =>
     apiGet<TeamScheduledGame[]>(`/teams/${tricode}/next_5`);
+
+export const getTeamCurrentRoster = (tricode: string) =>
+    apiGet<PlayerFullData[]>(`/teams/${tricode}/current_roster`);

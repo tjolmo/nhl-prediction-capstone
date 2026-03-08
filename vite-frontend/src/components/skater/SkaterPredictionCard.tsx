@@ -1,7 +1,7 @@
 import type { FC } from "react";
-import type { PlayerPredictionCardProps } from "../types/player";
+import type { PlayerPredictionCardProps } from "../../types/player";
 
-export const PlayerPredictionCard: FC<PlayerPredictionCardProps> = ({
+export const SkaterPredictionCard: FC<PlayerPredictionCardProps> = ({
   label,
   value,
   icon,
@@ -19,7 +19,9 @@ export const PlayerPredictionCard: FC<PlayerPredictionCardProps> = ({
       </span>
       <span className="text-lg">{icon}</span>
     </div>
-    <div className={`text-5xl font-black mt-1 ${color} leading-none`}>{value}</div>
+    <div className={`text-5xl font-black mt-1 ${color} leading-none`}>
+      {value}
+    </div>
     <div className="text-xs text-slate-400 mt-2 font-medium">{subtext}</div>
     <div
       className={`absolute -bottom-4 -right-4 w-20 h-20 rounded-full opacity-10 ${color.replace(

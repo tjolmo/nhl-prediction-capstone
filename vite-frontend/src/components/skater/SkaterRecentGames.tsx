@@ -1,5 +1,5 @@
 import { useOutletContext } from "react-router-dom";
-import type { SkaterData, SkaterStatKey } from "../types/skater";
+import type { SkaterData, SkaterStatKey } from "../../types/skater";
 import { SkaterGameRow } from "./SkaterGameRow";
 
 const statKeys: SkaterStatKey[] = ["goals", "assists", "points"];
@@ -21,9 +21,8 @@ export const SkaterRecentGames = () => {
               {(["Date", "OPP", "G", "A", "PTS"] as const).map((h) => (
                 <th
                   key={h}
-                  className={`py-3 px-4 text-[10px] font-black tracking-widest text-slate-400 uppercase ${
-                    ["G", "A", "PTS"].includes(h) ? "text-center" : "text-left"
-                  }`}
+                  className={`py-3 px-4 text-[10px] font-black tracking-widest text-slate-400 uppercase ${["G", "A", "PTS"].includes(h) ? "text-center" : "text-left"
+                    }`}
                 >
                   {h}
                 </th>

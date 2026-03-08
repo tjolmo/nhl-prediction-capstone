@@ -1,5 +1,5 @@
 import type { FC } from "react";
-import type { PlayerUpcomingGameProps } from "../types/player";
+import type { PlayerUpcomingGameProps } from "../../types/player";
 
 export const PlayerUpcomingGame: FC<PlayerUpcomingGameProps> = ({ upcomingGame }) => (
   <div className="bg-white rounded-2xl shadow-lg shadow-slate-200/50 p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -17,7 +17,7 @@ export const PlayerUpcomingGame: FC<PlayerUpcomingGameProps> = ({ upcomingGame }
       <span className="text-sm font-bold text-blue-600">
         {/* Convert to local time and format as h:mm A */}
         {new Date(upcomingGame.time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-    </span>
+      </span>
     </div>
   </div>
 );

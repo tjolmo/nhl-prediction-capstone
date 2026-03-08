@@ -1,13 +1,13 @@
 import { useParams } from "react-router-dom";
 import type { FC } from "react";
-import { GameCard } from "../components/GameCard";
+import { GameCard } from "../components/schedule/GameCard";
 import { useTeamNextFive } from "../hooks/useTeamNextFive";
 
 export const SchedulePage: FC = () => {
-    const { tricode } = useParams();
-    const { data: games, loading, error } = useTeamNextFive(tricode!);
-    if (error || !games) return <div>Error loading team schedule data.</div>;
-    if (loading) return <div>Loading...</div>;
+  const { tricode } = useParams();
+  const { data: games, loading, error } = useTeamNextFive(tricode!);
+  if (error || !games) return <div>Error loading team schedule data.</div>;
+  if (loading) return <div>Loading...</div>;
   const nextGameDate = games.find((g) => g.isNextGame)?.date;
 
   return (

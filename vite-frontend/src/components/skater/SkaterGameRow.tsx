@@ -1,5 +1,5 @@
 import type { FC } from "react";
-import type { SkaterGameRowProps } from "../types/skater";
+import type { SkaterGameRowProps } from "../../types/skater";
 
 export const SkaterGameRow: FC<SkaterGameRowProps> = ({ game_stats, index }) => {
   const isHot = game_stats.points >= 3;
@@ -28,11 +28,10 @@ export const SkaterGameRow: FC<SkaterGameRowProps> = ({ game_stats, index }) => 
       </td>
       <td className="py-3 px-4 text-center">
         <span
-          className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-sm font-black ${
-            isHot
+          className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-sm font-black ${isHot
               ? "bg-blue-600 text-white shadow-sm shadow-blue-200"
               : "text-slate-600 font-bold"
-          }`}
+            }`}
         >
           {game_stats.points}
         </span>

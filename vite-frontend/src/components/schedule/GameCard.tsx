@@ -1,5 +1,5 @@
 import type { FC } from "react";
-import type { TeamScheduledGame } from "../types/teams";
+import type { TeamScheduledGame } from "../../types/teams";
 
 interface GameCardProps {
   game: TeamScheduledGame;
@@ -9,9 +9,8 @@ interface GameCardProps {
 export const GameCard: FC<GameCardProps> = ({ game, index }) => {
   return (
     <div
-      className={`relative overflow-hidden rounded-2xl bg-white shadow-lg shadow-slate-200/50 transition-all duration-300 hover:shadow-xl hover:shadow-blue-100/60 hover:-translate-y-0.5 ${
-        game.isNextGame ? "ring-2 ring-blue-500 ring-offset-2" : ""
-      }`}
+      className={`relative overflow-hidden rounded-2xl bg-white shadow-lg shadow-slate-200/50 transition-all duration-300 hover:shadow-xl hover:shadow-blue-100/60 hover:-translate-y-0.5 ${game.isNextGame ? "ring-2 ring-blue-500 ring-offset-2" : ""
+        }`}
       style={{ animationDelay: `${index * 80}ms` }}
     >
       {game.isNextGame && (
@@ -82,8 +81,8 @@ export const GameCard: FC<GameCardProps> = ({ game, index }) => {
           <img
             src={game.homeTeam.logoUrl}
             alt={game.homeTeam.name}
-            className="w-14 h-14 sm:w-20 sm:h-20 object-cover"/>
-<div className="text-center">
+            className="w-14 h-14 sm:w-20 sm:h-20 object-cover" />
+          <div className="text-center">
             <p className="text-lg sm:text-xl font-black text-slate-500">
               {game.homeTeam.name}
             </p>

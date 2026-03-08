@@ -1,9 +1,8 @@
 import { Outlet, useParams } from "react-router-dom";
-//import { skaterData } from "../data/mockSkaterData";
-import { PlayerDashboardLayout } from "../components/PlayerDashboardLayout";
-import { PlayerHeader } from "../components//PlayerHeader";
-import { PlayerUpcomingGame } from "../components/PlayerUpcomingGame";
-import { PlayerDashboardTabs } from "../components/PlayerDashboardTabs";
+import { PlayerDashboardLayout } from "../components/player/PlayerDashboardLayout";
+import { PlayerHeader } from "../components/player/PlayerHeader";
+import { PlayerUpcomingGame } from "../components/player/PlayerUpcomingGame";
+import { PlayerDashboardTabs } from "../components/player/PlayerDashboardTabs";
 import { useSkater } from "../hooks/useSkater";
 
 const TABS = [

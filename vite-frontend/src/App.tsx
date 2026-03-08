@@ -7,6 +7,7 @@ import { SkaterRecentGames } from "./components/SkaterRecentGames";
 import { GoaliePredictionPanel } from "./components/goalie/GoaliePredictionPanel";
 import { GoalieRecentGames } from "./components/goalie/GoalieRecentGames";
 import SchedulePage from "./pages/SchedulePage";
+import RosterPage from "./pages/RosterPage";
 
 export default function App() {
   return (
@@ -26,6 +27,7 @@ export default function App() {
       </Route>
 
       <Route path="/schedule/:tricode" element={<SchedulePage />} />
+      <Route path="/roster/:tricode" element={<RosterPage />} />
     </Routes>
   );
 }

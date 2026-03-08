@@ -1,8 +1,8 @@
 import { Outlet, useParams } from "react-router-dom";
-import { PlayerDashboardLayout } from "../components/PlayerDashboardLayout";
-import { PlayerHeader } from "../components/PlayerHeader";
-import { PlayerUpcomingGame } from "../components/PlayerUpcomingGame";
-import { PlayerDashboardTabs } from "../components/PlayerDashboardTabs";
+import { PlayerHeader } from "../components/player/PlayerHeader";
+import { PlayerUpcomingGame } from "../components/player/PlayerUpcomingGame";
+import { PlayerDashboardTabs } from "../components/player/PlayerDashboardTabs";
+import { PlayerDashboardLayout } from "../components/player/PlayerDashboardLayout";
 import { useGoalie } from "../hooks/useGoalie";
 
 const TABS = [

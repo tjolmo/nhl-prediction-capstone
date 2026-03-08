@@ -18,7 +18,7 @@ export interface PlayerData {
 }
 
 export interface PlayerHeaderProps extends PlayerData {
-    seasonSummary: {label: string; value: number|string}[];
+    seasonSummary: { label: string; value: number | string }[];
 }
 
 export interface PlayerUpcomingGameProps {
@@ -26,10 +26,42 @@ export interface PlayerUpcomingGameProps {
 
 }
 export interface PlayerPredictionCardProps {
-  label: string;
-  value: number | string;
-  icon: string;
-  color: string;
-  bgColor: string;
-  subtext: ReactNode;
+    label: string;
+    value: number | string;
+    icon: string;
+    color: string;
+    bgColor: string;
+    subtext: ReactNode;
+}
+
+export interface PlayerFullData {
+    id: number;
+    headshot: string;
+    first_name: string;
+    last_name: string;
+    current_team_tri_code: string;
+    position: Position;
+    number: number;
+    shoots_catches: "L" | "R";
+    last_updated: string;
+    game_log_last_updated: string | null;
+}
+
+export type Position = "C" | "L" | "R" | "D" | "G";
+
+export interface PositionGroupConfig {
+    key: Position;
+    label: string;
+    plural: string;
+}
+
+export interface PlayerCardProps {
+    player: PlayerFullData;
+    index: number;
+}
+
+export interface PositionGroupProps {
+    label: string;
+    players: PlayerFullData[];
+    startIndex: number;
 }

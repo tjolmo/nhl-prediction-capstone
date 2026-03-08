@@ -1,13 +1,13 @@
-import type {FC} from "react";
-import type {PlayerHeaderProps} from "../types/player";
+import type { FC } from "react";
+import type { PlayerHeaderProps } from "../../types/player";
 
 export const PlayerHeader: FC<PlayerHeaderProps> = ({
-    name,
-    number,
-    team,
-    position,
-    headshotUrl,
-    seasonSummary
+  name,
+  number,
+  team,
+  position,
+  headshotUrl,
+  seasonSummary
 }) => {
   return (
     <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/60 overflow-hidden">
