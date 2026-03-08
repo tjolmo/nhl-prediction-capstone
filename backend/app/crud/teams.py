@@ -1,7 +1,8 @@
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy import select, or_, update
+from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
-from ..models import Team
+from ..models import Player, Team
 from external.nhl.response_models import TeamResponse
 import datetime
 
@@ -60,3 +61,15 @@ async def get_team_by_tri_code(db: AsyncSession, tri_code: str) -> Team | None:
     result = await db.execute(select(Team).where(Team.tri_code == tri_code))
     team = result.scalar_one_or_none()
     return team
+
+
+async def get_team_current_roster(db: AsyncSession, tri_code: str) -> list[Player] | None:
+    """Fetches team roster from db by tri code."""
+    stmt = (
+        select(Team)
+        .options(selectinload(Team.current_players))
+        .where(Team.tri_code == tri_code)
+    )
+    result = await db.execute(stmt)
+    team = result.scalar_one_or_none()
+    return team.current_players if team else None

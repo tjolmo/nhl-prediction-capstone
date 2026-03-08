@@ -1,8 +1,8 @@
 import datetime
 from fastapi import APIRouter, Depends, HTTPException
 from app.dependencies import get_db
-from app.crud.teams import get_team_by_tri_code, check_tri_code_exists
-from app.crud.games import get_next_n_games_info_by_tri_code, get_team_last_5_games
+from app.crud.teams import get_team_by_tri_code, check_tri_code_exists, get_team_current_roster
+from app.crud.games import get_all_games_for_today, get_next_n_games_info_by_tri_code, get_team_last_5_games
 from app.schemas.teams import TeamBasicInfoOut, Last5GameInfoOut, TeamScheduledGameInfoOut
 
 router = APIRouter(prefix="/teams", tags=["teams"])
@@ -58,3 +58,25 @@ async def get_team_next_5_games(tri_code: str, db = Depends(get_db)):
             ))
         return next_5_cleaned
     raise HTTPException(status_code=404, detail=f"No future games found for Team {tri_code} in DB")
+
+@router.get("/games/today", status_code=200)#, response_model=list[TeamScheduledGameInfoOut])
+async def get_all_games_today(db = Depends(get_db)):
+    games = await get_all_games_for_today(db)
+    return games
+    return [TeamScheduledGameInfoOut(
+        id=game.id,
+        date=datetime.datetime.strptime(str(game.date), "%Y%m%d").strftime("%B %d, %Y") if game.date else None,
+        homeTeam=homeTeam,
+        awayTeam=awayTeam,
+        time=game.start_time,
+        venue=game.venue,
+        isNextGame=False
+    ) for game in games]
+
+@router.get("/{tri_code}/current_roster", status_code=200)#, response_model=list[str] | None)
+async def get_team_current_roster_endpoint(tri_code: str, db = Depends(get_db)):
+    roster = await get_team_current_roster(db, tri_code)
+    print(roster)
+    if roster is not None:
+        return roster
+    raise HTTPException(status_code=404, detail=f"Roster for Team {tri_code} not found in DB")
