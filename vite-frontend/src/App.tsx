@@ -2,8 +2,8 @@ import { Routes, Route, Navigate } from "react-router-dom";
 
 import SkaterDashboard from "./pages/SkaterDashboard";
 import GoalieDashboard from "./pages/GoalieDashboard";
-import { SkaterPredictionPanel } from "./components/SkaterPredictionPanel";
-import { SkaterRecentGames } from "./components/SkaterRecentGames";
+import { SkaterPredictionPanel } from "./components/skater/SkaterPredictionPanel";
+import { SkaterRecentGames } from "./components/skater/SkaterRecentGames";
 import { GoaliePredictionPanel } from "./components/goalie/GoaliePredictionPanel";
 import { GoalieRecentGames } from "./components/goalie/GoalieRecentGames";
 import SchedulePage from "./pages/SchedulePage";

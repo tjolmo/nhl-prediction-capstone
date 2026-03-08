@@ -1,5 +1,6 @@
 import type { FC } from "react";
 import type { TeamScheduledGame } from "../../types/teams";
+import { TeamCard } from "./TeamCard";
 
 interface GameCardProps {
   game: TeamScheduledGame;
@@ -29,21 +30,7 @@ export const GameCard: FC<GameCardProps> = ({ game, index }) => {
       />
 
       <div className="relative flex flex-col sm:flex-row items-center sm:items-stretch gap-4 p-5 sm:p-6">
-        <div className="flex sm:flex-col items-center gap-3 sm:gap-2 sm:w-36 sm:justify-center sm:shrink-0">
-          <img
-            src={game.awayTeam.logoUrl}
-            alt={game.awayTeam.name}
-            className="w-14 h-14 sm:w-20 sm:h-20 object-cover"
-          />
-          <div className="text-center">
-            <p className="text-lg sm:text-xl font-black text-slate-500">
-              {game.awayTeam.name}
-            </p>
-            <p className="text-[10px] font-semibold tracking-wider text-slate-400 uppercase hidden sm:block">
-              Away
-            </p>
-          </div>
-        </div>
+        <TeamCard team={game.awayTeam} type="Away" />
 
         <div className="flex-1 flex flex-col items-center justify-center gap-3 py-1 order-first sm:order-none">
           <div className="flex items-center gap-2 flex-wrap justify-center">
@@ -77,20 +64,7 @@ export const GameCard: FC<GameCardProps> = ({ game, index }) => {
           </p>
         </div>
 
-        <div className="flex sm:flex-col items-center gap-3 sm:gap-2 sm:w-36 sm:justify-center sm:shrink-0">
-          <img
-            src={game.homeTeam.logoUrl}
-            alt={game.homeTeam.name}
-            className="w-14 h-14 sm:w-20 sm:h-20 object-cover" />
-          <div className="text-center">
-            <p className="text-lg sm:text-xl font-black text-slate-500">
-              {game.homeTeam.name}
-            </p>
-            <p className="text-[10px] font-semibold tracking-wider text-slate-400 uppercase hidden sm:block">
-              Home
-            </p>
-          </div>
-        </div>
+        <TeamCard team={game.homeTeam} type="Home" />
 
       </div>
     </div>

@@ -1,6 +1,6 @@
 import { useOutletContext } from "react-router-dom";
 import type { GoalieData } from "../../types/goalie";
-import { PlayerPredictionCard } from "../PlayerPredictionCard";
+import { PlayerPredictionCard } from "../player/PlayerPredictionCard";
 
 type TrendKey = "goals_against" | "saves" | "save_percentage";
 

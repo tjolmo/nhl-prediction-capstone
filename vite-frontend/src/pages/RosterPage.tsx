@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom";
 import type { FC } from "react";
 import type { PlayerFullData, Position, PositionGroupConfig } from "../types/player";
-import { PositionGroup } from "../components/PositionGroup";
+import { PositionGroup } from "../components/roster/PositionGroup";
 import { useRoster } from "../hooks/useRoster";
 
 const POSITION_GROUPS: PositionGroupConfig[] = [

@@ -1,6 +1,6 @@
 import type { FC } from "react";
 import { Link } from "react-router-dom";
-import type { PlayerFullData, PlayerCardProps } from "../types/player";
+import type { PlayerFullData, PlayerCardProps } from "../../types/player";
 
 const getHandednessLabel = (player: PlayerFullData): string => {
   const side = player.shoots_catches === "R" ? "Right" : "Left";

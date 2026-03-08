@@ -1,5 +1,5 @@
 import type { FC } from "react";
-import type { PositionGroupProps } from "../types/player";
+import type { PositionGroupProps } from "../../types/player";
 import { PlayerCard } from "./PlayerCard";
 
 export const PositionGroup: FC<PositionGroupProps> = ({
