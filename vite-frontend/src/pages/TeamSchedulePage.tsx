@@ -1,9 +1,10 @@
 import { useParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 import type { FC } from "react";
 import { GameCard } from "../components/schedule/GameCard";
 import { useTeamNextFive } from "../hooks/useTeamNextFive";
 
-export const SchedulePage: FC = () => {
+export const TeamSchedulePage: FC = () => {
   const { tricode } = useParams();
   const { data: games, loading, error } = useTeamNextFive(tricode!);
   if (error || !games) return <div>Error loading team schedule data.</div>;
@@ -26,7 +27,7 @@ export const SchedulePage: FC = () => {
             />
             <div className="absolute inset-0 flex flex-col items-center justify-center">
               <h1 className="text-white font-black text-2xl tracking-tight drop-shadow">
-                Upcoming Schedule
+                Upcoming Schedule for {tricode}
               </h1>
               {nextGameDate && (
                 <p className="text-blue-200 text-xs font-semibold mt-0.5">
@@ -35,7 +36,7 @@ export const SchedulePage: FC = () => {
               )}
             </div>
           </div>
-          <div className="grid grid-cols-3 divide-x divide-slate-100 bg-slate-50 rounded-b-3xl">
+          <div className="grid grid-cols-4 divide-x divide-slate-100 bg-slate-50 rounded-b-3xl">
             {[
               { label: "Games", value: games.length },
               { label: "Home", value: games.filter((g) => g.homeTeam.tricode === tricode).length },
@@ -48,6 +49,15 @@ export const SchedulePage: FC = () => {
                 </p>
               </div>
             ))}
+            <Link
+              to={`/roster/${tricode}`}
+              className="py-3 text-center flex flex-col items-center justify-center hover:bg-blue-50 transition-colors group"
+            >
+              <p className="text-lg font-black text-blue-600 group-hover:text-blue-700">→</p>
+              <p className="text-[10px] font-semibold tracking-wider text-blue-500 uppercase">
+                Roster
+              </p>
+            </Link>
           </div>
         </div>
         {games.map((game, i) => (
@@ -58,4 +68,5 @@ export const SchedulePage: FC = () => {
   );
 };
 
-export default SchedulePage;
+export default TeamSchedulePage;
+

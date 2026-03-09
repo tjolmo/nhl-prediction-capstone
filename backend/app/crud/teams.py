@@ -73,3 +73,9 @@ async def get_team_current_roster(db: AsyncSession, tri_code: str) -> list[Playe
     result = await db.execute(stmt)
     team = result.scalar_one_or_none()
     return team.current_players if team else None
+
+async def get_all_teams(db: AsyncSession) -> list[Team] | None:
+    """Fetches all teams from the database."""
+    result = await db.execute(select(Team))
+    teams = result.scalars().all()
+    return teams

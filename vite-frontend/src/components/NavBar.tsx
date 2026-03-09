@@ -1,6 +1,7 @@
 import { NavLink } from "react-router-dom";
 
 const TABS = [
+  { to: "/teams", label: "Teams", icon: "🏒" },
   { to: "/schedule/SJS", label: "Schedule Example", icon: "📅" },
   { to: "/player/8470621", label: "Player Example", icon: "🏒" },
   { to: "/goalie/8471734", label: "Goalie Example", icon: "🧤" },
@@ -15,10 +16,9 @@ export default function Navbar() {
             key={tab.to}
             to={tab.to}
             className={({ isActive }) =>
-              `flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold transition-all ${
-                isActive
-                  ? "bg-blue-600 text-white shadow-md shadow-blue-200"
-                  : "text-slate-400 hover:text-slate-600 hover:bg-slate-50"
+              `flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold transition-all ${isActive
+                ? "bg-blue-600 text-white shadow-md shadow-blue-200"
+                : "text-slate-400 hover:text-slate-600 hover:bg-slate-50"
               }`
             }
           >

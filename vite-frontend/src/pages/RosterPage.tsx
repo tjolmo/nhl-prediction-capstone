@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import type { FC } from "react";
 import type { PlayerFullData, Position, PositionGroupConfig } from "../types/player";
 import { PositionGroup } from "../components/roster/PositionGroup";
@@ -61,27 +61,38 @@ export const RosterPage: FC = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-3 divide-x divide-slate-100 bg-slate-50 rounded-b-3xl">
+          <div className="grid grid-cols-4 divide-x divide-slate-100 bg-slate-50 rounded-b-3xl">
             {loading ? (
-              [0, 1, 2].map((i) => (
+              [0, 1, 2, 3].map((i) => (
                 <div key={i} className="py-3 text-center">
                   <div className="h-6 w-8 bg-slate-200 rounded-lg mx-auto animate-pulse" />
                   <div className="h-3 w-14 bg-slate-100 rounded-lg mx-auto mt-1.5 animate-pulse" />
                 </div>
               ))
             ) : (
-              [
-                { label: "Players", value: totalPlayers },
-                { label: "Skaters", value: totalSkaters },
-                { label: "Goalies", value: totalGoalies },
-              ].map((s) => (
-                <div key={s.label} className="py-3 text-center">
-                  <p className="text-lg font-black text-slate-800">{s.value}</p>
-                  <p className="text-[10px] font-semibold tracking-wider text-slate-400 uppercase">
-                    {s.label}
+              <>
+                {[
+                  { label: "Players", value: totalPlayers },
+                  { label: "Skaters", value: totalSkaters },
+                  { label: "Goalies", value: totalGoalies },
+                ].map((s) => (
+                  <div key={s.label} className="py-3 text-center">
+                    <p className="text-lg font-black text-slate-800">{s.value}</p>
+                    <p className="text-[10px] font-semibold tracking-wider text-slate-400 uppercase">
+                      {s.label}
+                    </p>
+                  </div>
+                ))}
+                <Link
+                  to={`/schedule/${tricode}`}
+                  className="py-3 text-center flex flex-col items-center justify-center hover:bg-blue-50 transition-colors group"
+                >
+                  <p className="text-lg font-black text-blue-600 group-hover:text-blue-700">→</p>
+                  <p className="text-[10px] font-semibold tracking-wider text-blue-500 uppercase">
+                    Schedule
                   </p>
-                </div>
-              ))
+                </Link>
+              </>
             )}
           </div>
         </div>

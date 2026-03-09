@@ -6,8 +6,10 @@ import { SkaterPredictionPanel } from "./components/skater/SkaterPredictionPanel
 import { SkaterRecentGames } from "./components/skater/SkaterRecentGames";
 import { GoaliePredictionPanel } from "./components/goalie/GoaliePredictionPanel";
 import { GoalieRecentGames } from "./components/goalie/GoalieRecentGames";
-import SchedulePage from "./pages/SchedulePage";
+import TeamSchedulePage from "./pages/TeamSchedulePage";
 import RosterPage from "./pages/RosterPage";
+import DailySchedulePage from "./pages/DailySchedulePage";
+import TeamsPage from "./pages/TeamsPage";
 
 export default function App() {
   return (
@@ -26,8 +28,10 @@ export default function App() {
         <Route path="recent" element={<GoalieRecentGames />} />
       </Route>
 
-      <Route path="/schedule/:tricode" element={<SchedulePage />} />
+      <Route path="/schedule/today" element={<DailySchedulePage />} />
+      <Route path="/schedule/:tricode" element={<TeamSchedulePage />} />
       <Route path="/roster/:tricode" element={<RosterPage />} />
+      <Route path="/teams" element={<TeamsPage />} />
     </Routes>
   );
 }

@@ -1,9 +1,9 @@
 import datetime
 from fastapi import APIRouter, Depends, HTTPException
 from app.dependencies import get_db
-from app.crud.teams import get_team_by_tri_code, check_tri_code_exists, get_team_current_roster
+from app.crud.teams import get_team_by_tri_code, check_tri_code_exists, get_team_current_roster, get_all_teams
 from app.crud.games import get_all_games_for_today, get_next_n_games_info_by_tri_code, get_team_last_5_games
-from app.schemas.teams import TeamBasicInfoOut, Last5GameInfoOut, TeamScheduledGameInfoOut
+from app.schemas.teams import TeamBasicInfoOut, Last5GameInfoOut, TeamScheduledGameInfoOut, TeamRosteredPlayer
 
 router = APIRouter(prefix="/teams", tags=["teams"])
 
@@ -59,24 +59,61 @@ async def get_team_next_5_games(tri_code: str, db = Depends(get_db)):
         return next_5_cleaned
     raise HTTPException(status_code=404, detail=f"No future games found for Team {tri_code} in DB")
 
-@router.get("/games/today", status_code=200)#, response_model=list[TeamScheduledGameInfoOut])
+@router.get("/games/today", status_code=200, response_model=list[TeamScheduledGameInfoOut])
 async def get_all_games_today(db = Depends(get_db)):
     games = await get_all_games_for_today(db)
-    return games
-    return [TeamScheduledGameInfoOut(
-        id=game.id,
-        date=datetime.datetime.strptime(str(game.date), "%Y%m%d").strftime("%B %d, %Y") if game.date else None,
-        homeTeam=homeTeam,
-        awayTeam=awayTeam,
-        time=game.start_time,
-        venue=game.venue,
-        isNextGame=False
-    ) for game in games]
+    cleaned_games = []
+    if games is None:
+        raise HTTPException(status_code=404, detail=f"No games found for today in DB")
+    for i, game in enumerate(games):
+        try: 
+            home_team = await get_team_by_tri_code(db, game.home_team_tri_code)
+            away_team = await get_team_by_tri_code(db, game.away_team_tri_code)
+            homeTeam = TeamBasicInfoOut(name=home_team.current_name, 
+                                            tricode=home_team.tri_code, 
+                                            logoUrl=f"https://assets.nhle.com/logos/nhl/svg/{home_team.tri_code}_light.svg" if home_team.tri_code else None
+                        )
+            awayTeam = TeamBasicInfoOut(name=away_team.current_name, 
+                                            tricode=away_team.tri_code, 
+                                            logoUrl=f"https://assets.nhle.com/logos/nhl/svg/{away_team.tri_code}_light.svg" if away_team.tri_code else None
+                        )
+        except Exception as e:
+            return HTTPException(status_code=500, detail=f"Error fetching team info for game {game.id}: {e}")
+        cleaned_games.append(TeamScheduledGameInfoOut(
+            id=game.id,
+            date=datetime.datetime.strptime(str(game.date), "%Y%m%d").strftime("%B %d, %Y") if game.date else None,
+            homeTeam=homeTeam,
+            awayTeam=awayTeam,
+            time=game.start_time,
+            venue=game.venue,
+            isNextGame=False
+        ))
+    if len(cleaned_games) == 0:
+        raise HTTPException(status_code=404, detail=f"No games found for today in DB")
+    return cleaned_games
 
-@router.get("/{tri_code}/current_roster", status_code=200)#, response_model=list[str] | None)
+@router.get("/{tri_code}/current_roster", status_code=200, response_model=list[TeamRosteredPlayer] | None)
 async def get_team_current_roster_endpoint(tri_code: str, db = Depends(get_db)):
     roster = await get_team_current_roster(db, tri_code)
-    print(roster)
     if roster is not None:
-        return roster
+        return [TeamRosteredPlayer(
+                    id=player.id, 
+                    headshot=player.headshot,
+                    first_name=player.first_name, 
+                    current_team_tri_code=player.current_team_tri_code, 
+                    position=player.position, 
+                    last_name=player.last_name, 
+                    number=player.number, 
+                    shoots_catches=player.shoots_catches
+                ) for player in roster]
     raise HTTPException(status_code=404, detail=f"Roster for Team {tri_code} not found in DB")
+
+@router.get("/all", status_code=200, response_model=list[TeamBasicInfoOut])
+async def get_all_teams_basic_info(db = Depends(get_db)):
+    teams = await get_all_teams(db)
+    if teams is not None:
+        return_list = [TeamBasicInfoOut(name=team.current_name, tricode=team.tri_code, logoUrl=f"https://assets.nhle.com/logos/nhl/svg/{team.tri_code}_light.svg" if team.tri_code else None) for team in teams]
+        # temp fix, no coyotes
+        return_list.remove(TeamBasicInfoOut(name="Arizona Coyotes", tricode="ARI", logoUrl="https://assets.nhle.com/logos/nhl/svg/ARI_light.svg"))
+        return return_list
+    raise HTTPException(status_code=404, detail=f"No teams found in DB")

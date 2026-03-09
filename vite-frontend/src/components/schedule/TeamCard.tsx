@@ -4,7 +4,7 @@ import type { Team } from "../../types/teams";
 
 interface TeamCardProps {
     team: Team;
-    type: "Away" | "Home";
+    type?: "Away" | "Home";
 }
 
 export const TeamCard: FC<TeamCardProps> = ({ team, type }) => {
@@ -22,10 +22,13 @@ export const TeamCard: FC<TeamCardProps> = ({ team, type }) => {
                 <p className="text-lg sm:text-xl font-black text-slate-500">
                     {team.name}
                 </p>
-                <p className="text-[10px] font-semibold tracking-wider text-slate-400 uppercase hidden sm:block">
-                    {type}
-                </p>
+                {type && (
+                    <p className="text-[10px] font-semibold tracking-wider text-slate-400 uppercase hidden sm:block">
+                        {type}
+                    </p>
+                )}
             </div>
         </Link>
     );
 };
+

@@ -30,3 +30,14 @@ class TeamScheduledGameInfoOut(BaseModel):
     time: datetime.datetime
     venue: str
     isNextGame: bool
+
+class TeamRosteredPlayer(BaseModel):
+    """Output model for a player on a team's roster"""
+    id: int
+    headshot: str
+    first_name: str
+    current_team_tri_code: str
+    position: str
+    last_name: str
+    number: int
+    shoots_catches: str
