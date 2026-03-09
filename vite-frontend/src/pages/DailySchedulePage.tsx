@@ -6,7 +6,6 @@ export const DailySchedulePage: FC = () => {
   const { data: games, loading, error } = useTodayGames();
   if (error || !games) return <div>Error loading team schedule data.</div>;
   if (loading) return <div>Loading...</div>;
-  const nextGameDate = games.find((g) => g.isNextGame)?.date;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-100 font-sans p-4 sm:p-6 lg:p-10">

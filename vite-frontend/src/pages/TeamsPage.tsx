@@ -9,7 +9,6 @@ export const TeamsPage: FC = () => {
 
   if (error) return <div>Error loading teams.</div>;
 
-  // Build a lookup map tricode → Team once data arrives
   const teamsByTricode = new Map<string, Team>(
     (teams ?? []).map((t) => [t.tricode, t])
   );
@@ -18,12 +17,10 @@ export const TeamsPage: FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-100 font-sans p-4 sm:p-6 lg:p-10">
-      {/* Background blobs */}
       <div className="fixed top-0 right-0 w-96 h-96 bg-blue-400/10 rounded-full blur-3xl pointer-events-none" />
       <div className="fixed bottom-0 left-0 w-64 h-64 bg-indigo-400/10 rounded-full blur-3xl pointer-events-none" />
 
       <div className="relative max-w-5xl mx-auto space-y-6">
-        {/* Header card */}
         <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/60 overflow-hidden">
           <div className="h-20 bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-700 relative">
             <div
@@ -43,7 +40,6 @@ export const TeamsPage: FC = () => {
             </div>
           </div>
 
-          {/* Stats bar */}
           <div className="grid grid-cols-2 divide-x divide-slate-100 bg-slate-50 rounded-b-3xl">
             {[
               { label: "Conferences", value: 2 },
@@ -59,9 +55,7 @@ export const TeamsPage: FC = () => {
           </div>
         </div>
 
-        {/* Conference / Division sections */}
         {loading ? (
-          // Skeleton
           <div className="space-y-10">
             {[0, 1].map((ci) => (
               <div key={ci} className="space-y-6">

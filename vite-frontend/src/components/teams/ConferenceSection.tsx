@@ -14,7 +14,6 @@ export const ConferenceSection: FC<ConferenceSectionProps> = ({
 }) => {
   return (
     <div className="space-y-6">
-      {/* Conference header */}
       <div className="flex items-center gap-4">
         <div className="h-0.5 w-5 bg-blue-600 rounded-full" />
         <h2 className="text-base font-black text-slate-700 tracking-wide">

@@ -27,7 +27,7 @@ export const NHL_CONFERENCES: ConferenceInfo[] = [
     divisions: [
       {
         name: "Central Division",
-        tricodes: ["ARI", "CHI", "COL", "DAL", "MIN", "NSH", "STL", "WPG", "UTA"],
+        tricodes: ["CHI", "COL", "DAL", "MIN", "NSH", "STL", "WPG", "UTA"],
       },
       {
         name: "Pacific Division",
