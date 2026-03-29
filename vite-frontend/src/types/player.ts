@@ -41,7 +41,7 @@ export interface PlayerFullData {
     last_name: string;
     current_team_tri_code: string;
     position: Position;
-    number: number;
+    number: number | null;
     shoots_catches: "L" | "R";
     last_updated: string;
     game_log_last_updated: string | null;

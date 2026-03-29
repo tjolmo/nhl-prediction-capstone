@@ -39,5 +39,5 @@ class TeamRosteredPlayer(BaseModel):
     current_team_tri_code: str
     position: str
     last_name: str
-    number: int
+    number: int | None
     shoots_catches: str
