@@ -1,15 +1,33 @@
 import { useParams } from "react-router-dom";
 import { Link } from "react-router-dom";
 import type { FC } from "react";
+import { useEffect, useRef } from "react";
 import { GameCard } from "../components/schedule/GameCard";
 import { useTeamNextFive } from "../hooks/useTeamNextFive";
+import type { TeamScheduledGame } from "../types/teams";
 
 export const TeamSchedulePage: FC = () => {
   const { tricode } = useParams();
-  const { data: games, loading, error } = useTeamNextFive(tricode!);
-  if (error || !games) return <div>Error loading team schedule data.</div>;
+  const { games, loading, loadingMore, hasMore, loadMore, error } = useTeamNextFive(tricode!);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) loadMore();
+      },
+      { rootMargin: "200px" }
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [loadMore]);
+
+  if (error) return <div>Error loading team schedule data.</div>;
   if (loading) return <div>Loading...</div>;
-  const nextGameDate = games.find((g) => g.isNextGame)?.date;
+
+  const nextGameDate = games.find((g: TeamScheduledGame) => g.isNextGame)?.date;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-100 font-sans p-4 sm:p-6 lg:p-10">
@@ -39,8 +57,8 @@ export const TeamSchedulePage: FC = () => {
           <div className="grid grid-cols-4 divide-x divide-slate-100 bg-slate-50 rounded-b-3xl">
             {[
               { label: "Games", value: games.length },
-              { label: "Home", value: games.filter((g) => g.homeTeam.tricode === tricode).length },
-              { label: "Away", value: games.filter((g) => g.awayTeam.tricode === tricode).length },
+              { label: "Home", value: games.filter((g: TeamScheduledGame) => g.homeTeam.tricode === tricode).length },
+              { label: "Away", value: games.filter((g: TeamScheduledGame) => g.awayTeam.tricode === tricode).length },
             ].map((s) => (
               <div key={s.label} className="py-3 text-center">
                 <p className="text-lg font-black text-slate-800">{s.value}</p>
@@ -60,9 +78,22 @@ export const TeamSchedulePage: FC = () => {
             </Link>
           </div>
         </div>
-        {games.map((game, i) => (
+
+        {games.map((game: TeamScheduledGame, i: number) => (
           <GameCard key={game.id} game={game} index={i} />
         ))}
+
+        {hasMore && <div ref={sentinelRef} className="h-1" />}
+
+        {loadingMore && (
+          <div className="flex justify-center py-6">
+            <div className="w-8 h-8 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin" />
+          </div>
+        )}
+
+        {!hasMore && games.length > 0 && (
+          <p className="text-center text-slate-400 text-sm py-4">All Future Games Loaded</p>
+        )}
       </div>
     </div>
   );

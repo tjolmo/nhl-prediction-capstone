@@ -86,7 +86,7 @@ async def get_next_game_info_by_tri_code(db: AsyncSession, tri_code: str) -> Gam
     game = result.scalar_one_or_none()
     return game
 
-async def get_next_n_games_info_by_tri_code(db: AsyncSession, tri_code: str, n: int) -> list[Games]:
+async def get_next_n_games_info_by_tri_code(db: AsyncSession, tri_code: str, n: int, offset: int = 0) -> list[Games]:
     """Fetches next n games info from db for a team by tri code."""
     result = await db.execute(
         select(Games).
@@ -95,6 +95,7 @@ async def get_next_n_games_info_by_tri_code(db: AsyncSession, tri_code: str, n: 
             (Games.game_state == "FUT")
         ).
         order_by(Games.date.asc()).
+        offset(offset).
         limit(n)
     )
     games = result.scalars().all()

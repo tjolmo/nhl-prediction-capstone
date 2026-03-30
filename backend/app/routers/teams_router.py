@@ -28,9 +28,9 @@ async def get_team_basic_info(tri_code: str, db = Depends(get_db)):
     raise HTTPException(status_code=404, detail=f"Team {tri_code} not found in DB")
 
     
-@router.get("/{tri_code}/next_5", status_code=200, response_model=list[TeamScheduledGameInfoOut])
-async def get_team_next_5_games(tri_code: str, db = Depends(get_db)):
-    next_5_games = await get_next_n_games_info_by_tri_code(db, tri_code, 5)
+@router.get("/{tri_code}/next_5/{offset}", status_code=200, response_model=list[TeamScheduledGameInfoOut])
+async def get_team_next_5_games(tri_code: str, offset: int, db = Depends(get_db)):
+    next_5_games = await get_next_n_games_info_by_tri_code(db, tri_code, 5, offset)
     next_5_cleaned = []
     if next_5_games is not None:
         for i, game in enumerate(next_5_games):
