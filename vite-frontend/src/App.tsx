@@ -14,16 +14,16 @@ import TeamsPage from "./pages/TeamsPage";
 export default function App() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/player/97/predictions" replace />} />
+      <Route path="/" element={<Navigate to="/schedule/today" />} />
 
       <Route path="/player/:id" element={<SkaterDashboard />}>
-        <Route index element={<Navigate to="predictions" replace />} />
+        <Route index element={<Navigate to="predictions" />} />
         <Route path="predictions" element={<SkaterPredictionPanel />} />
         <Route path="recent" element={<SkaterRecentGames />} />
       </Route>
 
       <Route path="/goalie/:id" element={<GoalieDashboard />}>
-        <Route index element={<Navigate to="predictions" replace />} />
+        <Route index element={<Navigate to="predictions" />} />
         <Route path="predictions" element={<GoaliePredictionPanel />} />
         <Route path="recent" element={<GoalieRecentGames />} />
       </Route>

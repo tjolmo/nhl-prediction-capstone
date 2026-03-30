@@ -1,9 +1,9 @@
 import { NavLink } from "react-router-dom";
 
 const TABS = [
+  { to: "/schedule/today", label: "Today's Games", icon: "📅" },
   { to: "/teams", label: "Teams", icon: "🏒" },
-  { to: "/schedule/SJS", label: "Schedule Example", icon: "📅" },
-  { to: "/player/8470621", label: "Player Example", icon: "🏒" },
+  { to: "/player/8478402", label: "Skater Example", icon: "🏒" },
   { to: "/goalie/8471734", label: "Goalie Example", icon: "🧤" },
 ];
 
