@@ -1,21 +1,21 @@
 import { useState, useEffect } from "react";
 import type { TeamScheduledGame } from "../types/teams";
-import { getTodaysGames } from "../api/games";
+import { getGamesByDate } from "../api/games";
 
-export function useTodayGames() {
+export function useDateGames(date: string) {
     const [data, setData] = useState<TeamScheduledGame[] | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<Error | null>(null);
 
     useEffect(() => {
         Promise.all([
-            getTodaysGames()
+            getGamesByDate(date)
         ])
             .then(([nextGames]) => {
                 setData(nextGames);
             })
             .catch(setError)
             .finally(() => setLoading(false));
-    }, []);
+    }, [date]);
     return { data, loading, error };
 }

@@ -28,8 +28,8 @@ export default function App() {
         <Route path="recent" element={<GoalieRecentGames />} />
       </Route>
 
-      <Route path="/schedule/today" element={<DailySchedulePage />} />
-      <Route path="/schedule/:tricode" element={<TeamSchedulePage />} />
+      <Route path="/schedule/team/:tricode" element={<TeamSchedulePage />} />
+      <Route path="/schedule/:date" element={<DailySchedulePage />} />
       <Route path="/roster/:tricode" element={<RosterPage />} />
       <Route path="/teams" element={<TeamsPage />} />
     </Routes>

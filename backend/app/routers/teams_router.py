@@ -2,7 +2,7 @@ import datetime
 from fastapi import APIRouter, Depends, HTTPException
 from app.dependencies import get_db
 from app.crud.teams import get_team_by_tri_code, check_tri_code_exists, get_team_current_roster, get_all_teams
-from app.crud.games import get_all_games_for_today, get_next_n_games_info_by_tri_code, get_team_last_5_games
+from app.crud.games import get_all_games_for_date, get_next_n_games_info_by_tri_code, get_team_last_5_games
 from app.schemas.teams import TeamBasicInfoOut, Last5GameInfoOut, TeamScheduledGameInfoOut, TeamRosteredPlayer
 
 router = APIRouter(prefix="/teams", tags=["teams"])
@@ -59,12 +59,22 @@ async def get_team_next_5_games(tri_code: str, offset: int, db = Depends(get_db)
         return next_5_cleaned
     raise HTTPException(status_code=404, detail=f"No future games found for Team {tri_code} in DB")
 
-@router.get("/games/today", status_code=200, response_model=list[TeamScheduledGameInfoOut])
-async def get_all_games_today(db = Depends(get_db)):
-    games = await get_all_games_for_today(db)
+@router.get("/games/{date}", status_code=200, response_model=list[TeamScheduledGameInfoOut])
+async def get_all_games_from_date(db = Depends(get_db), date: str="today"):
+    if date == "today":
+        int_date = datetime.date.today()
+        # to int YYYYMMDD
+        int_date = int(int_date.strftime("%Y%m%d")) 
+    else:
+        try:
+            int_date = int(date)
+        except ValueError:
+            raise HTTPException(status_code=400, detail=f"Invalid date format. Please use YYYYMMDD or 'today'")
+
+    games = await get_all_games_for_date(db, int_date)
     cleaned_games = []
     if games is None:
-        raise HTTPException(status_code=404, detail=f"No games found for today in DB")
+        raise HTTPException(status_code=404, detail=f"No games found for {date} in DB")
     for i, game in enumerate(games):
         try: 
             home_team = await get_team_by_tri_code(db, game.home_team_tri_code)

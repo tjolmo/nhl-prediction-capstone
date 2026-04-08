@@ -109,15 +109,12 @@ async def check_if_games_in_db(db: AsyncSession, game_ids: list[int]) -> list[in
     existing_game_ids = result.scalars().all()
     return existing_game_ids
 
-async def get_all_games_for_today(db: AsyncSession) -> list[Games]:
-    """Fetches all games from db for today."""
-    today = datetime.date.today()
-    # to int YYYYMMDD
-    today = int(today.strftime("%Y%m%d"))
+async def get_all_games_for_date(db: AsyncSession, date: int) -> list[Games]:
+    """Fetches all games from db for date."""
     result = await db.execute(
         select(Games).
         where(
-            Games.date == today
+            Games.date == date
         ).
         order_by(Games.start_time.asc())
     )

@@ -1,11 +1,15 @@
 import type { FC } from "react";
 import { GameCard } from "../components/schedule/GameCard";
-import { useTodayGames } from "../hooks/useTodayGames";
+import { useParams } from "react-router-dom";
+import { useDateGames } from "../hooks/useDateGames";
+import LoadingPage from "./LoadingPage";
+import ErrorPage from "./ErrorPage";
 
 export const DailySchedulePage: FC = () => {
-  const { data: games, loading, error } = useTodayGames();
-  if (error || !games) return <div>Error loading team schedule data.</div>;
-  if (loading) return <div>Loading...</div>;
+  const { date } = useParams();
+  const { data: games, loading, error } = useDateGames(date!);
+  if (loading) return <LoadingPage />;
+  if (error || !games) return <ErrorPage message="Error loading schedule data." />;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-100 font-sans p-4 sm:p-6 lg:p-10">
@@ -23,7 +27,14 @@ export const DailySchedulePage: FC = () => {
             />
             <div className="absolute inset-0 flex flex-col items-center justify-center">
               <h1 className="text-white font-black text-2xl tracking-tight drop-shadow">
-                Today's Schedule {new Date().toLocaleDateString()}
+                {date === 'today'
+                  ? `Today (${new Date().toLocaleDateString()})`
+                  : new Date(
+                    parseInt(date!.substring(0, 4)),
+                    parseInt(date!.substring(4, 6)) - 1,
+                    parseInt(date!.substring(6, 8))
+                  ).toLocaleDateString()}
+                's Schedule
               </h1>
             </div>
           </div>
