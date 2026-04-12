@@ -39,7 +39,7 @@ export interface PlayerFullData {
     headshot: string;
     first_name: string;
     last_name: string;
-    current_team_tri_code: string;
+    current_team_tri_code: string | null;
     position: Position;
     number: number | null;
     shoots_catches: "L" | "R";
@@ -64,4 +64,13 @@ export interface PositionGroupProps {
     label: string;
     players: PlayerFullData[];
     startIndex: number;
+}
+
+export interface SearchPlayerResult {
+    id: number;
+    first_name: string;
+    last_name: string;
+    headshot: string | null;
+    current_team_tri_code: string | null;
+    position: Position | null;
 }

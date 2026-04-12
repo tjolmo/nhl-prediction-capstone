@@ -114,3 +114,15 @@ async def set_all_other_players_current_team_tri_code_to_null(db: AsyncSession, 
     )
     await db.execute(stmt)
     await db.commit()
+
+async def search_players_by_name(db: AsyncSession, query: str, limit: int = 3) -> list[Player]:
+    """Searches players by first/last name"""
+    search_term = f"%{query}%"
+    result = await db.execute(
+        select(Player).where(
+        (Player.first_name + " " + Player.last_name).ilike(search_term)
+        )
+        .order_by(Player.current_team_tri_code.asc())
+        .limit(limit)
+    )
+    return list(result.scalars().all())

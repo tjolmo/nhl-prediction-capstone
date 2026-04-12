@@ -5,6 +5,8 @@ import { useEffect, useRef } from "react";
 import { GameCard } from "../components/schedule/GameCard";
 import { useTeamNextFive } from "../hooks/useTeamNextFive";
 import type { TeamScheduledGame } from "../types/teams";
+import LoadingPage from "./LoadingPage";
+import ErrorPage from "./ErrorPage";
 
 export const TeamSchedulePage: FC = () => {
   const { tricode } = useParams();
@@ -24,8 +26,8 @@ export const TeamSchedulePage: FC = () => {
     return () => observer.disconnect();
   }, [loadMore]);
 
-  if (error) return <div>Error loading team schedule data.</div>;
-  if (loading) return <div>Loading...</div>;
+  if (error) return <ErrorPage message="Error loading team schedule data." />;
+  if (loading) return <LoadingPage />;
 
   const nextGameDate = games.find((g: TeamScheduledGame) => g.isNextGame)?.date;
 

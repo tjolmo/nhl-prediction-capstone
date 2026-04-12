@@ -3,6 +3,8 @@ import type { FC } from "react";
 import type { PlayerFullData, Position, PositionGroupConfig } from "../types/player";
 import { PositionGroup } from "../components/roster/PositionGroup";
 import { useRoster } from "../hooks/useRoster";
+import LoadingPage from "./LoadingPage";
+import ErrorPage from "./ErrorPage";
 
 const POSITION_GROUPS: PositionGroupConfig[] = [
   { key: "C", label: "Centers", plural: "Centers" },
@@ -15,8 +17,8 @@ const POSITION_GROUPS: PositionGroupConfig[] = [
 export const RosterPage: FC = () => {
   const { tricode } = useParams<{ tricode: string }>();
   const { data: players, loading, error } = useRoster(tricode!);
-  if (error) { return <div>Error</div> }
-  if (loading) { return <div>Loading</div> }
+  if (loading) { return <LoadingPage />; }
+  if (error) { return <ErrorPage message="Error loading roster data." />; }
 
   const grouped = POSITION_GROUPS.reduce<Record<Position, PlayerFullData[]>>(
     (acc, group) => {
@@ -84,7 +86,7 @@ export const RosterPage: FC = () => {
                   </div>
                 ))}
                 <Link
-                  to={`/schedule/${tricode}`}
+                  to={`/schedule/team/${tricode}`}
                   className="py-3 text-center flex flex-col items-center justify-center hover:bg-blue-50 transition-colors group"
                 >
                   <p className="text-lg font-black text-blue-600 group-hover:text-blue-700">→</p>

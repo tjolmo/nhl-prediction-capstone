@@ -4,6 +4,8 @@ import { PlayerHeader } from "../components/player/PlayerHeader";
 import { PlayerUpcomingGame } from "../components/player/PlayerUpcomingGame";
 import { PlayerDashboardTabs } from "../components/player/PlayerDashboardTabs";
 import { useSkater } from "../hooks/useSkater";
+import LoadingPage from "./LoadingPage";
+import ErrorPage from "./ErrorPage";
 
 const TABS = [
   { to: "predictions", label: "Predictions", icon: "🎯" },
@@ -14,8 +16,8 @@ const TABS = [
 export default function SkaterDashboard() {
   const { id } = useParams();
   const { data: skaterData, loading, error } = useSkater(Number(id!));
-  if (error || !skaterData) return <div>Error loading player data.</div>;
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <LoadingPage />;
+  if (error || !skaterData) return <ErrorPage message="Error loading player data." />;
   const { name, number, team, position, headshotUrl, upcomingGame, seasonStats } = skaterData!;
   const seasonSummary = [
     { label: "GP", value: seasonStats.games },

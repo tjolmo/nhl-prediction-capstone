@@ -4,6 +4,8 @@ import { PlayerUpcomingGame } from "../components/player/PlayerUpcomingGame";
 import { PlayerDashboardTabs } from "../components/player/PlayerDashboardTabs";
 import { PlayerDashboardLayout } from "../components/player/PlayerDashboardLayout";
 import { useGoalie } from "../hooks/useGoalie";
+import LoadingPage from "./LoadingPage";
+import ErrorPage from "./ErrorPage";
 
 const TABS = [
     { to: "predictions", label: "Predictions", icon: "🎯" },
@@ -13,8 +15,8 @@ const TABS = [
 export default function GoalieDashboard() {
     const { id } = useParams();
     const { data: goalieData, loading, error } = useGoalie(Number(id!));
-    if (error || !goalieData) return <div>Error loading player data.</div>;
-    if (loading) return <div>Loading...</div>;
+    if (loading) return <LoadingPage />;
+    if (error || !goalieData) return <ErrorPage message="Error loading player data." />;
     const { name, number, team, position, headshotUrl, upcomingGame, seasonStats } = goalieData!;
 
     const seasonSummary = [

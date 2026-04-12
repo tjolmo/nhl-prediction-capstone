@@ -110,3 +110,15 @@ class GoalieSeasonBasicStatsGetOut(BaseModel):
     games: int
     gaa: float
     save_percentage: float
+
+class PlayerSearchResultOut(BaseModel):
+    """Output model for a player search result"""
+    id: int
+    first_name: str
+    last_name: str
+    headshot: str | None
+    current_team_tri_code: str | None
+    position: str | None
+
+    class Config:
+        from_attributes = True

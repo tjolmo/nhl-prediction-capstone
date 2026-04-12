@@ -3,11 +3,14 @@ import { useTeams } from "../hooks/useTeams";
 import { NHL_CONFERENCES } from "../data/nhlDivisions";
 import { ConferenceSection } from "../components/teams/ConferenceSection";
 import type { Team } from "../types/teams";
+import ErrorPage from "./ErrorPage";
+import LoadingPage from "./LoadingPage";
 
 export const TeamsPage: FC = () => {
   const { data: teams, loading, error } = useTeams();
 
-  if (error) return <div>Error loading teams.</div>;
+  if (error) return <ErrorPage message="Error loading teams." />;
+  if (loading) return <LoadingPage />;
 
   const teamsByTricode = new Map<string, Team>(
     (teams ?? []).map((t) => [t.tricode, t])

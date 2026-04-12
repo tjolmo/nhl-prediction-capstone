@@ -1,10 +1,9 @@
 import datetime
-
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from app.crud.games import get_next_game_info_by_tri_code
 from app.dependencies import get_db
-from app.schemas.player import GoalieLast5BasicStatsGetOut, GoalieSeasonBasicStatsGetOut, PlayerGameLogGetOut, GoalieGameLogGetOut, PlayerNextGameGetOut, SkaterLast5BasicStatsGetOut, SkaterSeasonBasicStatsGetOut, PlayerBasicInfoOut
-from app.crud.players import get_player_by_id
+from app.schemas.player import GoalieLast5BasicStatsGetOut, GoalieSeasonBasicStatsGetOut, PlayerGameLogGetOut, GoalieGameLogGetOut, PlayerNextGameGetOut, SkaterLast5BasicStatsGetOut, SkaterSeasonBasicStatsGetOut, PlayerBasicInfoOut, PlayerSearchResultOut
+from app.crud.players import get_player_by_id, search_players_by_name
 from app.crud.skater_game_logs import get_skater_last_5_basic_stats_from_db, get_player_game_log_by_game_and_player_id, get_skater_season_basic_stats_from_db
 from app.crud.goalie_game_logs import get_goalie_last_5_basic_stats_from_db, get_goalie_season_basic_stats_from_db
 
@@ -131,3 +130,16 @@ async def get_goalie_season_basic_stats(player_id: int, season: int, db = Depend
             raise HTTPException(status_code=404, detail=f"Season {season} stats for goalie {player_id} not found in DB")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error retrieving season {season} stats for goalie {player_id} from DB: {e}")
+
+@router.get("/search", status_code=200, response_model=list[PlayerSearchResultOut])
+async def search_players(q: str = Query(..., min_length=1), limit: int = 3, db=Depends(get_db)):
+    """Searches players by name."""
+    results = await search_players_by_name(db, q, limit)
+    return [PlayerSearchResultOut(
+        id=player.id,
+        first_name=player.first_name,
+        last_name=player.last_name,
+        position=player.position,
+        current_team_tri_code=player.current_team_tri_code,
+        headshot=player.headshot
+    ) for player in results]

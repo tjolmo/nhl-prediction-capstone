@@ -10,6 +10,7 @@ import TeamSchedulePage from "./pages/TeamSchedulePage";
 import RosterPage from "./pages/RosterPage";
 import DailySchedulePage from "./pages/DailySchedulePage";
 import TeamsPage from "./pages/TeamsPage";
+import SearchResultsPage from "./pages/SearchResultsPage";
 
 export default function App() {
   return (
@@ -32,6 +33,7 @@ export default function App() {
       <Route path="/schedule/:date" element={<DailySchedulePage />} />
       <Route path="/roster/:tricode" element={<RosterPage />} />
       <Route path="/teams" element={<TeamsPage />} />
+      <Route path="/search" element={<SearchResultsPage />} />
     </Routes>
   );
 }
