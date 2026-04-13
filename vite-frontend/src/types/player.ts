@@ -10,9 +10,9 @@ export interface UpcomingGame {
 
 export interface PlayerData {
     name: string;
-    number: number;
+    number: number | null;
     team: string;
-    position: string;
+    position: Position;
     headshotUrl: string;
     upcomingGame: UpcomingGame;
 }
@@ -42,12 +42,12 @@ export interface PlayerFullData {
     current_team_tri_code: string | null;
     position: Position;
     number: number | null;
-    shoots_catches: "L" | "R";
+    shoots_catches: "L" | "R" | "U";
     last_updated: string;
     game_log_last_updated: string | null;
 }
 
-export type Position = "C" | "L" | "R" | "D" | "G";
+export type Position = "C" | "L" | "R" | "D" | "G" | "U";
 
 export interface PositionGroupConfig {
     key: Position;

@@ -114,10 +114,10 @@ async def get_team_current_roster_endpoint(tri_code: str, db = Depends(get_db)):
                     headshot=player.headshot,
                     first_name=player.first_name, 
                     current_team_tri_code=player.current_team_tri_code, 
-                    position=player.position, 
+                    position=player.position if player.position else "U", 
                     last_name=player.last_name, 
                     number=player.number, 
-                    shoots_catches=player.shoots_catches
+                    shoots_catches=player.shoots_catches if player.shoots_catches else "U"
                 ) for player in roster]
     raise HTTPException(status_code=404, detail=f"Roster for Team {tri_code} not found in DB")
 

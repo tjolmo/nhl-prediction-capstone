@@ -12,6 +12,7 @@ const POSITION_GROUPS: PositionGroupConfig[] = [
   { key: "R", label: "Right Wings", plural: "Right Wings" },
   { key: "D", label: "Defensemen", plural: "Defensemen" },
   { key: "G", label: "Goalies", plural: "Goalies" },
+  { key: "U", label: "Unknown", plural: "Unknown" },
 ];
 
 export const RosterPage: FC = () => {
@@ -27,14 +28,15 @@ export const RosterPage: FC = () => {
         : [];
       return acc;
     },
-    { C: [], L: [], R: [], D: [], G: [] }
+    { C: [], L: [], R: [], D: [], G: [], U: [] }
   );
 
   let cardIndex = 0;
 
   const totalPlayers = players?.length ?? 0;
-  const totalSkaters = players?.filter((p) => p.position !== "G").length ?? 0;
+  const totalSkaters = players?.filter((p) => p.position !== "G" && p.position !== "U").length ?? 0;
   const totalGoalies = players?.filter((p) => p.position === "G").length ?? 0;
+  const totalUnknown = players?.filter((p) => p.position === "U").length ?? 0;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-100 font-sans p-4 sm:p-6 lg:p-10">
@@ -77,6 +79,7 @@ export const RosterPage: FC = () => {
                   { label: "Players", value: totalPlayers },
                   { label: "Skaters", value: totalSkaters },
                   { label: "Goalies", value: totalGoalies },
+                  { label: "Unknown", value: totalUnknown },
                 ].map((s) => (
                   <div key={s.label} className="py-3 text-center">
                     <p className="text-lg font-black text-slate-800">{s.value}</p>
@@ -109,7 +112,7 @@ export const RosterPage: FC = () => {
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                   {Array.from({
-                    length: group.key === "D" ? 4 : group.key === "G" ? 2 : 3,
+                    length: group.key === "D" ? 4 : group.key === "G" ? 2 : group.key === "U" ? 1 : 3,
                   }).map((_, i) => (
                     <div
                       key={i}

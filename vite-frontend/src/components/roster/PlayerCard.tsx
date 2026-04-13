@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import type { PlayerFullData, PlayerCardProps } from "../../types/player";
 
 const getHandednessLabel = (player: PlayerFullData): string => {
-  const side = player.shoots_catches === "R" ? "Right" : "Left";
+  const side = player.shoots_catches === "R" ? "Right" : player.shoots_catches === "L" ? "Left" : "Unknown";
   return player.position === "G" ? `Catches: ${side}` : `Shoots: ${side}`;
 };
 
@@ -13,6 +13,7 @@ const POSITION_LABELS: Record<string, string> = {
   R: "Right Wing",
   D: "Defenseman",
   G: "Goalie",
+  U: "Unknown",
 };
 
 export const PlayerCard: FC<PlayerCardProps> = ({ player, index }) => {
@@ -38,7 +39,7 @@ export const PlayerCard: FC<PlayerCardProps> = ({ player, index }) => {
 
         <div className="absolute top-3 left-3 z-10">
           <span className="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-blue-600 text-white text-xs font-black shadow-md shadow-blue-300/40">
-            {player.number}
+            {player.number ?? "N/A"}
           </span>
         </div>
 

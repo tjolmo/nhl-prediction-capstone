@@ -21,7 +21,7 @@ export const PlayerHeader: FC<PlayerHeaderProps> = ({
           }}
         />
         <div className="absolute top-3 left-4 text-white/30 font-black text-7xl leading-none select-none">
-          {number}
+          {number ?? "N/A"}
         </div>
       </div>
 
