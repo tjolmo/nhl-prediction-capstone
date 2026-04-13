@@ -22,8 +22,8 @@ class PlayerResponse(BaseModel):
     first_name: str = Field(alias="firstName")
     last_name: str = Field(alias="lastName")
     number: int | None = Field(default=None, alias="sweaterNumber")
-    position: str | None = Field(alias="positionCode")
-    shoots_catches: str | None = Field(alias="shootsCatches")
+    position: str | None = Field(default=None, alias="positionCode")
+    shoots_catches: str | None = Field(default=None, alias="shootsCatches")
     
     # to get the english names 
     @field_validator("first_name", "last_name", mode="before")
@@ -43,8 +43,8 @@ class PlayerLandingResponse(BaseModel):
     first_name: str = Field(alias="firstName")
     last_name: str = Field(alias="lastName")
     number: int | None = Field(default=None, alias="sweaterNumber")
-    position: str | None = Field(alias="positionCode")
-    shoots_catches: str | None = Field(alias="shootsCatches")
+    position: str | None = Field(default=None, alias="positionCode")
+    shoots_catches: str | None = Field(default=None, alias="shootsCatches")
     
     # to get the english names 
     @field_validator("first_name", "last_name", mode="before")
