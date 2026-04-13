@@ -41,3 +41,9 @@ class TeamRosteredPlayer(BaseModel):
     last_name: str
     number: int | None
     shoots_catches: str
+
+class TeamSearchResultOut(BaseModel):
+    """Output model for a team search result"""
+    name: str
+    tricode: str
+    logoUrl: str | None

@@ -79,3 +79,19 @@ async def get_all_teams(db: AsyncSession) -> list[Team] | None:
     result = await db.execute(select(Team))
     teams = result.scalars().all()
     return teams
+
+async def search_teams_by_name(db: AsyncSession, query: str, limit: int = 3) -> list[Team]:
+    """Searches teams by name"""
+    search_term = f"%{query}%"
+    result = await db.execute(
+        select(Team).where(
+            or_(
+                Team.current_name.ilike(search_term),
+                Team.tri_code.ilike(search_term)
+            )
+        )
+        .order_by(Team.current_name.asc())
+        .limit(limit)
+    )
+    return list(result.scalars().all())
+        

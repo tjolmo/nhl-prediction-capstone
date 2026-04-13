@@ -19,3 +19,9 @@ export interface TeamScheduledGame {
   predictedScore: PredictedScore;
   isNextGame?: boolean;
 }
+
+export interface SearchTeamResult {
+  name: string;
+  tricode: string;
+  logoUrl: string | null;
+}

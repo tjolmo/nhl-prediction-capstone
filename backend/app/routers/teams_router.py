@@ -1,3 +1,6 @@
+from app.crud.teams import search_teams_by_name
+from fastapi import Query
+from app.schemas.teams import TeamSearchResultOut
 import datetime
 from fastapi import APIRouter, Depends, HTTPException
 from app.dependencies import get_db
@@ -127,3 +130,13 @@ async def get_all_teams_basic_info(db = Depends(get_db)):
         return_list.remove(TeamBasicInfoOut(name="Arizona Coyotes", tricode="ARI", logoUrl="https://assets.nhle.com/logos/nhl/svg/ARI_light.svg"))
         return return_list
     raise HTTPException(status_code=404, detail=f"No teams found in DB")
+
+@router.get("/search", status_code=200, response_model=list[TeamSearchResultOut])
+async def search_teams(q: str = Query(..., min_length=1), limit: int = 3, db=Depends(get_db)):
+    """Searches teams by name."""
+    results = await search_teams_by_name(db, q, limit)
+    return [TeamSearchResultOut(
+        name=team.current_name,
+        tricode=team.tri_code,
+        logoUrl=f"https://assets.nhle.com/logos/nhl/svg/{team.tri_code}_light.svg" if team.tri_code else None,
+    ) for team in results]

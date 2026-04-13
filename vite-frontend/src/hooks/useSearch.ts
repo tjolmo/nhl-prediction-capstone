@@ -1,16 +1,25 @@
 import { useState, useEffect } from "react";
 import type { SearchPlayerResult } from "../types/player";
+import type { SearchTeamResult } from "../types/teams";
 import { getSearchPlayer } from "../api/player";
+import { getSearchTeam } from "../api/teams";
 
-export function usePlayerSearch(debounceMs: number = 300) {
+export interface SearchResults {
+    players: SearchPlayerResult[];
+    teams: SearchTeamResult[];
+}
+
+export function useSearch(debounceMs: number = 300) {
     const [query, setQuery] = useState("");
-    const [results, setResults] = useState<SearchPlayerResult[]>([]);
+    const [results, setResults] = useState<SearchResults>({ players: [], teams: [] });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
+    const hasResults = results.players.length > 0 || results.teams.length > 0;
+
     useEffect(() => {
         if (!query.trim()) {
-            setResults([]);
+            setResults({ players: [], teams: [] });
             setError(null);
             return;
         }
@@ -18,12 +27,15 @@ export function usePlayerSearch(debounceMs: number = 300) {
         setLoading(true);
         const timer = setTimeout(async () => {
             try {
-                const data = await getSearchPlayer(query.trim(), 3);
-                setResults(data);
+                const [players, teams] = await Promise.all([
+                    getSearchPlayer(query.trim(), 3),
+                    getSearchTeam(query.trim(), 3),
+                ]);
+                setResults({ players, teams });
                 setError(null);
             } catch (e) {
                 setError(e instanceof Error ? e.message : "Search failed");
-                setResults([]);
+                setResults({ players: [], teams: [] });
             } finally {
                 setLoading(false);
             }
@@ -35,5 +47,5 @@ export function usePlayerSearch(debounceMs: number = 300) {
         };
     }, [query, debounceMs]);
 
-    return { query, setQuery, results, loading, error };
+    return { query, setQuery, results, hasResults, loading, error };
 }
