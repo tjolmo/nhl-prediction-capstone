@@ -1,6 +1,6 @@
 from .database import Base
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import ForeignKey, DateTime
+from sqlalchemy import ForeignKey, DateTime, ForeignKeyConstraint
 import datetime
 
 class Team(Base):
@@ -115,3 +115,37 @@ class Games(Base):
     away_score: Mapped[int] = mapped_column(nullable=True)
     game_state: Mapped[str] = mapped_column(nullable=False)
     last_updated: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=datetime.datetime.now(datetime.timezone.utc), onupdate=datetime.datetime.now(datetime.timezone.utc))
+
+class SkaterGameFeatures(Base):
+    __tablename__ = "skater_game_features"
+    game_id: Mapped[int] = mapped_column(primary_key=True)
+    player_id: Mapped[int] = mapped_column(primary_key=True)
+    rolling_x_goals: Mapped[float] = mapped_column(nullable=False)
+    rolling_toi: Mapped[float] = mapped_column(nullable=False)
+    rolling_game_score: Mapped[float] = mapped_column(nullable=False)
+    rolling_shot_attempts: Mapped[float] = mapped_column(nullable=False)
+    rolling_high_danger_shots: Mapped[float] = mapped_column(nullable=False)
+    rolling_on_ice_x_goals_percentage: Mapped[float] = mapped_column(nullable=False)
+    rolling_primary_assists: Mapped[float] = mapped_column(nullable=False)
+    rolling_goals: Mapped[float] = mapped_column(nullable=False)
+    rolling_points: Mapped[float] = mapped_column(nullable=False)
+    last_updated: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=datetime.datetime.now(datetime.timezone.utc), onupdate=datetime.datetime.now(datetime.timezone.utc))
+    ForeignKeyConstraint(["game_id", "player_id"], ["skater_game_logs.game_id", "skater_game_logs.player_id"]),
+
+class GoalieGameFeatures(Base):
+    __tablename__ = "goalie_game_features"
+    game_id: Mapped[int] = mapped_column(primary_key=True)
+    player_id: Mapped[int] = mapped_column(primary_key=True)
+    rolling_x_goals_against: Mapped[float] = mapped_column(nullable=False)
+    rolling_goals_against: Mapped[float] = mapped_column(nullable=False)
+    rolling_sog: Mapped[float] = mapped_column(nullable=False)
+    rolling_flurry_adjusted_x_goals: Mapped[float] = mapped_column(nullable=False)
+    rolling_high_danger_x_goals: Mapped[float] = mapped_column(nullable=False)
+    rolling_x_sog: Mapped[float] = mapped_column(nullable=False)
+    rolling_high_danger_shots: Mapped[float] = mapped_column(nullable=False)
+    rolling_rebounds: Mapped[float] = mapped_column(nullable=False)
+    rolling_x_rebounds: Mapped[float] = mapped_column(nullable=False)
+    rolling_freeze: Mapped[float] = mapped_column(nullable=False)
+    rolling_x_freeze: Mapped[float] = mapped_column(nullable=False)
+    last_updated: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=datetime.datetime.now(datetime.timezone.utc), onupdate=datetime.datetime.now(datetime.timezone.utc))
+    ForeignKeyConstraint(["game_id", "player_id"], ["goalie_game_logs.game_id", "goalie_game_logs.player_id"]),

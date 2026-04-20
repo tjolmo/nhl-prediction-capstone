@@ -126,3 +126,11 @@ async def search_players_by_name(db: AsyncSession, query: str, limit: int = 3) -
         .limit(limit)
     )
     return list(result.scalars().all())
+
+async def get_player_current_team_tri_code(db: AsyncSession, player_id: int) -> str | None:
+    """Fetches the current team tri code for a player."""
+    result = await db.execute(
+        select(Player.current_team_tri_code).where(Player.id == player_id)
+    )
+    player_tri_code = result.scalar_one_or_none()
+    return player_tri_code

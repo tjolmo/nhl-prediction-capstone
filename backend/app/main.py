@@ -6,18 +6,20 @@ from .routers import teams_router, player_router
 from .database import AsyncSessionLocal
 from .schedules import (add_current_teams_to_db, add_old_teams_to_db, fetch_current_rosters_for_all_teams, 
                         fetch_current_schedules_for_all_teams, fetch_all_season_schedules_for_all_teams, 
-                        fetch_all_player_game_logs, fetch_recent_player_game_logs)
+                        fetch_all_player_game_logs, fetch_recent_player_game_logs, update_daily_features)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("Connecting to Postgres")
     
     async with AsyncSessionLocal() as db:
-        await add_current_teams_to_db(db)
-        await add_old_teams_to_db(db)
-        await fetch_current_schedules_for_all_teams(db)
+        print("Connected to Postgres")
+        await update_daily_features(db)
+        #await add_current_teams_to_db(db)
+        #await add_old_teams_to_db(db)
+        #await fetch_current_schedules_for_all_teams(db)
         #await fetch_current_rosters_for_all_teams(db)
-        #await fetch_all_seasons_schedules_for_all_teams(db)
+        #await fetch_all_season_schedules_for_all_teams(db)
         #await fetch_all_player_game_logs(db, "all")
         #await fetch_recent_player_game_logs(db, "all")
 
@@ -43,9 +45,3 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 ),
-
-@app.get("/")
-async def test():
-    return {"message": "API working"}
-    
-

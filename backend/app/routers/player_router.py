@@ -2,10 +2,12 @@ import datetime
 from fastapi import APIRouter, Depends, HTTPException, Query
 from app.crud.games import get_next_game_info_by_tri_code
 from app.dependencies import get_db
-from app.schemas.player import GoalieLast5BasicStatsGetOut, GoalieSeasonBasicStatsGetOut, PlayerGameLogGetOut, GoalieGameLogGetOut, PlayerNextGameGetOut, SkaterLast5BasicStatsGetOut, SkaterSeasonBasicStatsGetOut, PlayerBasicInfoOut, PlayerSearchResultOut
-from app.crud.players import get_player_by_id, search_players_by_name
-from app.crud.skater_game_logs import get_skater_last_5_basic_stats_from_db, get_player_game_log_by_game_and_player_id, get_skater_season_basic_stats_from_db
-from app.crud.goalie_game_logs import get_goalie_last_5_basic_stats_from_db, get_goalie_season_basic_stats_from_db
+from app.schemas.player import GoalieLast5BasicStatsGetOut, GoalieSeasonBasicStatsGetOut, GoaliePredictionOut, PlayerGameLogGetOut, GoalieGameLogGetOut, PlayerNextGameGetOut, SkaterLast5BasicStatsGetOut, SkaterSeasonBasicStatsGetOut, PlayerBasicInfoOut, PlayerSearchResultOut, PlayerPredictionOut
+from app.crud.players import get_player_by_id, search_players_by_name, get_player_current_team_tri_code
+from app.crud.skater_game_logs import get_skater_last_5_basic_stats_from_db, get_player_game_log_by_game_and_player_id, get_skater_season_basic_stats_from_db, calculate_rolling_features_last_5_games
+from app.crud.goalie_game_logs import get_goalie_last_5_basic_stats_from_db, get_goalie_season_basic_stats_from_db, calculate_rolling_features_last_5_games_goalie
+from predictions.predict import load_skater_models, load_skater_clf_models, load_goalie_models, load_goalie_clf_models
+import numpy as np
 
 router = APIRouter(prefix="/players", tags=["players"])
 
@@ -38,12 +40,14 @@ async def get_skater_season_basic_stats(player_id: int, season: int, db = Depend
     """Fetches basic season stats for a skater by player ID and season."""
     try:
         stats = await get_skater_season_basic_stats_from_db(db, player_id, season)
-        if stats:
-            return SkaterSeasonBasicStatsGetOut(games=stats["games"], goals=stats["goals"], assists=stats["assists"], points=stats["points"])
-        else:
-            raise HTTPException(status_code=404, detail=f"Season {season} stats for skater {player_id} not found in DB")
+        print(stats)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error retrieving season {season} stats for skater {player_id} from DB: {e}")
+    if stats is not None:
+        return SkaterSeasonBasicStatsGetOut(games=stats["games"], goals=stats["goals"], assists=stats["assists"], points=stats["points"])
+    else:
+        return SkaterSeasonBasicStatsGetOut(games=0, goals=0, assists=0, points=0)
+        #raise HTTPException(status_code=404, detail=f"Season {season} stats for skater {player_id} not found in DB")
 
 @router.get("/skater/{player_id}/last_5/basic_stats", status_code=200, response_model=list[SkaterLast5BasicStatsGetOut])
 async def get_skater_last_5_basic_stats(player_id: int, db = Depends(get_db)):
@@ -74,7 +78,7 @@ async def get_player_data(player_id: int, db = Depends(get_db)):
         name = f"{player_info.first_name} {player_info.last_name}",
         number=player_info.number,
         position=player_info.position,
-        team=player_info.current_team_tri_code,
+        team=player_info.current_team_tri_code if player_info.current_team_tri_code else "N/A",
         headshotUrl=player_info.headshot
     )
 
@@ -85,7 +89,14 @@ async def get_player_upcoming_game(player_id: int, db = Depends(get_db)):
     if not player_info:
         raise HTTPException(status_code=404, detail=f"Player {player_id} not found in DB")
     if player_info.current_team_tri_code is None:
-        raise HTTPException(status_code=404, detail=f"Player {player_id} does not have a current team in DB")
+        return PlayerNextGameGetOut(
+            date=None,
+            opposing_team_tricode=None,
+            venue=None,
+            time=None,
+            home_away=None
+        )
+        #raise HTTPException(status_code=404, detail=f"Player {player_id} does not have a current team in DB")
     upcoming_game = await get_next_game_info_by_tri_code(db, player_info.current_team_tri_code)
     if not upcoming_game:
         raise HTTPException(status_code=404, detail=f"Upcoming game for player {player_id} not found in DB")
@@ -143,3 +154,121 @@ async def search_players(q: str = Query(..., min_length=1), limit: int = 3, db=D
         current_team_tri_code=player.current_team_tri_code,
         headshot=player.headshot
     ) for player in results]
+
+@router.get("/skater/{player_id}/prediction", status_code=200, response_model=PlayerPredictionOut)
+async def get_skater_prediction(player_id: int, db = Depends(get_db)):
+    """Fetches prediction for a skater by player ID."""
+    try:
+        # get last 5 rolling features for skater
+        skater_last_5 = await calculate_rolling_features_last_5_games(db, player_id)
+        if skater_last_5.empty:
+            raise HTTPException(status_code=404, detail=f"Last 5 games stats for skater {player_id} not found in DB")
+
+        # get skater next game info
+        player_current_team = await get_player_current_team_tri_code(db, player_id)
+        if player_current_team is None:
+            return PlayerPredictionOut(
+                goals=0.0, 
+                assists=0.0, 
+                points=0.0, 
+                prob_goal=0.0, 
+                prob_assist=0.0, 
+                prob_point=0.0
+            )
+            #raise HTTPException(status_code=404, detail=f"Player {player_id} does not have a current team in DB")
+        print(player_current_team)
+        skater_next_game = await get_next_game_info_by_tri_code(db, player_current_team)
+        if skater_next_game is None:
+            raise HTTPException(status_code=404, detail=f"Next game for player {player_id} not found in DB")
+
+        #set is_home for the prediction
+        if skater_next_game.home_team_tri_code == player_current_team:
+            skater_last_5["is_home"] = 1
+        else:
+            skater_last_5["is_home"] = 0
+        
+        models = load_skater_models()
+        X = skater_last_5.astype(np.float32)
+        result = {} 
+        for target, model in models.items():
+            preds = model.predict(X)
+            result[f"pred_{target}"] = preds[0]
+
+        # Classification probabilities (graceful fallback if not trained)
+        proba_result = {}
+        try:
+            clf_models = load_skater_clf_models()
+            for target, model in clf_models.items():
+                proba = model.predict_proba(X)[:, 1]
+                proba_result[f"prob_{target}"] = float(proba[0])
+        except FileNotFoundError:
+            pass
+
+        return PlayerPredictionOut(
+            goals=round(float(result["pred_goals"]), 2),
+            assists=round(float(result["pred_primary_assists"] + result["pred_secondary_assists"]), 2),
+            points=round(float(result["pred_points"]), 2),
+            prob_goal=round(proba_result["prob_goals"], 4) if "prob_goals" in proba_result else None,
+            prob_assist=round(proba_result["prob_assists"], 4) if "prob_assists" in proba_result else None,
+            prob_point=round(proba_result["prob_points"], 4) if "prob_points" in proba_result else None,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error retrieving last 5 games stats for skater {player_id} from DB: {e}")
+    
+@router.get("/goalie/{player_id}/prediction", status_code=200, response_model=GoaliePredictionOut)
+async def get_goalie_prediction(player_id: int, db = Depends(get_db)):
+    """Fetches prediction for a goalie by player ID."""
+    try:
+        goalie_last_5 = await calculate_rolling_features_last_5_games_goalie(db, player_id)
+        if goalie_last_5.empty:
+            raise HTTPException(status_code=404, detail=f"Last 5 games stats for goalie {player_id} not found in DB")
+
+        player_current_team = await get_player_current_team_tri_code(db, player_id)
+        if player_current_team is None:
+            return GoaliePredictionOut(
+                goals_against=0.0,
+                saves=0.0,
+                save_percentage=None,
+                prob_shutout=None,
+                prob_quality_start=None,
+            )
+
+        goalie_next_game = await get_next_game_info_by_tri_code(db, player_current_team)
+        if goalie_next_game is None:
+            raise HTTPException(status_code=404, detail=f"Next game for goalie {player_id} not found in DB")
+
+        if goalie_next_game.home_team_tri_code == player_current_team:
+            goalie_last_5["is_home"] = 1
+        else:
+            goalie_last_5["is_home"] = 0
+
+        models = load_goalie_models()
+        X = goalie_last_5.astype(np.float32)
+        result = {}
+        for target, model in models.items():
+            preds = model.predict(X)
+            result[f"pred_{target}"] = preds[0]
+
+        proba_result = {}
+        try:
+            clf_models = load_goalie_clf_models()
+            for target, model in clf_models.items():
+                proba = model.predict_proba(X)[:, 1]
+                proba_result[f"prob_{target}"] = float(proba[0])
+        except FileNotFoundError:
+            pass
+
+        pred_ga = float(result["pred_goals_against"])
+        pred_sog = float(result["pred_sog"])
+        pred_saves = max(0.0, pred_sog - pred_ga)
+        pred_sv_pct = (pred_saves / pred_sog) if pred_sog > 0 else None
+
+        return GoaliePredictionOut(
+            goals_against=round(pred_ga, 2),
+            saves=round(pred_saves, 2),
+            save_percentage=round(pred_sv_pct, 4) if pred_sv_pct is not None else None,
+            prob_shutout=round(proba_result["prob_shutout"], 4) if "prob_shutout" in proba_result else None,
+            prob_quality_start=round(proba_result["prob_quality_start"], 4) if "prob_quality_start" in proba_result else None,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error retrieving prediction for goalie {player_id}: {e}")

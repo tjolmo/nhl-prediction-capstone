@@ -1,5 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-
+from sqlalchemy import select, func, insert, not_, exists
+from .models import SkaterGameLog, GoalieGameLog, SkaterGameFeatures, GoalieGameFeatures
 from external.nhl.players import fetch_and_get_players_info
 from .crud.goalie_game_logs import get_goalie_most_recent_game_date_and_last_updated
 from external.nhl.teams import fetch_and_clean_team, fetch_and_clean_team_roster, fetch_and_clean_team_schedule
@@ -66,7 +67,7 @@ async def fetch_current_schedules_for_all_teams(db: AsyncSession):
 
 async def fetch_all_season_schedules_for_all_teams(db: AsyncSession):
     tri_codes = await get_all_tri_codes_in_db(db)
-    for season in ["20232024", "20242025", "now"]:
+    for season in ["20202021", "20212022", "20222023", "20232024", "20242025", "now"]:
         all_schedule_data = set()
         for tri_code in tri_codes:
             schedule_data = await fetch_and_clean_team_schedule(tri_code, season)
@@ -190,3 +191,102 @@ async def fetch_recent_player_game_logs(db: AsyncSession, player_type: str = "al
             #upsert to db
             if game_logs:
                 await upsert_scraped_goalie_game_logs(db, game_logs)
+
+async def update_daily_features(session: AsyncSession) -> None:
+    #skater portion
+    skater_window_query = select(
+        SkaterGameLog.game_id,
+        SkaterGameLog.player_id,
+        func.avg(SkaterGameLog.x_goals).over(
+            partition_by=SkaterGameLog.player_id, order_by=SkaterGameLog.game_date, rows=(-5, -1)
+        ).label("rolling_x_goals"),
+        func.avg(SkaterGameLog.toi).over(
+            partition_by=SkaterGameLog.player_id, order_by=SkaterGameLog.game_date, rows=(-5, -1)
+        ).label("rolling_toi"),
+        func.avg(SkaterGameLog.game_score).over(
+            partition_by=SkaterGameLog.player_id, order_by=SkaterGameLog.game_date, rows=(-5, -1)
+        ).label("rolling_game_score"),
+        func.avg(SkaterGameLog.shot_attempts).over(
+            partition_by=SkaterGameLog.player_id, order_by=SkaterGameLog.game_date, rows=(-5, -1)
+        ).label("rolling_shot_attempts"),
+        func.avg(SkaterGameLog.high_danger_shots).over(
+            partition_by=SkaterGameLog.player_id, order_by=SkaterGameLog.game_date, rows=(-5, -1)
+        ).label("rolling_high_danger_shots"),
+        func.avg(SkaterGameLog.on_ice_x_goals_percentage).over(
+            partition_by=SkaterGameLog.player_id, order_by=SkaterGameLog.game_date, rows=(-5, -1)
+        ).label("rolling_on_ice_x_goals_percentage"),
+        func.avg(SkaterGameLog.primary_assists).over(
+            partition_by=SkaterGameLog.player_id, order_by=SkaterGameLog.game_date, rows=(-5, -1)
+        ).label("rolling_primary_assists"),
+        func.avg(SkaterGameLog.goals).over(
+            partition_by=SkaterGameLog.player_id, order_by=SkaterGameLog.game_date, rows=(-5, -1)
+        ).label("rolling_goals"),
+        func.avg(SkaterGameLog.points).over(
+            partition_by=SkaterGameLog.player_id, order_by=SkaterGameLog.game_date, rows=(-5, -1)
+        ).label("rolling_points")
+    ).where(
+        not_(
+            exists().where(
+                (SkaterGameFeatures.game_id == SkaterGameLog.game_id) &
+                (SkaterGameFeatures.player_id == SkaterGameLog.player_id)
+            )
+        )
+    )
+    # Filter out None values
+    new_skater_features = [row for row in (await session.execute(skater_window_query)).mappings().all() if row["rolling_x_goals"] is not None]
+    if new_skater_features:
+        await session.execute(insert(SkaterGameFeatures), new_skater_features)
+
+    # Goalie portion
+    goalie_window_query = select(
+        GoalieGameLog.game_id,
+        GoalieGameLog.player_id,
+        func.avg(GoalieGameLog.x_goals_against).over(
+            partition_by=GoalieGameLog.player_id, order_by=GoalieGameLog.game_date, rows=(-5, -1)
+        ).label("rolling_x_goals_against"),
+        func.avg(GoalieGameLog.goals_against).over(
+            partition_by=GoalieGameLog.player_id, order_by=GoalieGameLog.game_date, rows=(-5, -1)
+        ).label("rolling_goals_against"),
+        func.avg(GoalieGameLog.sog).over(
+            partition_by=GoalieGameLog.player_id, order_by=GoalieGameLog.game_date, rows=(-5, -1)
+        ).label("rolling_sog"),
+        func.avg(GoalieGameLog.flurry_adjusted_x_goals).over(
+            partition_by=GoalieGameLog.player_id, order_by=GoalieGameLog.game_date, rows=(-5, -1)
+        ).label("rolling_flurry_adjusted_x_goals"),
+        func.avg(GoalieGameLog.high_danger_x_goals).over(
+            partition_by=GoalieGameLog.player_id, order_by=GoalieGameLog.game_date, rows=(-5, -1)
+        ).label("rolling_high_danger_x_goals"),
+        func.avg(GoalieGameLog.x_sog).over(
+            partition_by=GoalieGameLog.player_id, order_by=GoalieGameLog.game_date, rows=(-5, -1)
+        ).label("rolling_x_sog"),
+        func.avg(GoalieGameLog.high_danger_shots).over(
+            partition_by=GoalieGameLog.player_id, order_by=GoalieGameLog.game_date, rows=(-5, -1)
+        ).label("rolling_high_danger_shots"),
+        func.avg(GoalieGameLog.rebounds).over(
+            partition_by=GoalieGameLog.player_id, order_by=GoalieGameLog.game_date, rows=(-5, -1)
+        ).label("rolling_rebounds"),
+        func.avg(GoalieGameLog.x_rebounds).over(
+            partition_by=GoalieGameLog.player_id, order_by=GoalieGameLog.game_date, rows=(-5, -1)
+        ).label("rolling_x_rebounds"),
+        func.avg(GoalieGameLog.freeze).over(
+            partition_by=GoalieGameLog.player_id, order_by=GoalieGameLog.game_date, rows=(-5, -1)
+        ).label("rolling_freeze"),
+        func.avg(GoalieGameLog.x_freeze).over(
+            partition_by=GoalieGameLog.player_id, order_by=GoalieGameLog.game_date, rows=(-5, -1)
+        ).label("rolling_x_freeze"),
+    ).where(
+        not_(
+            exists().where(
+                (GoalieGameFeatures.game_id == GoalieGameLog.game_id) &
+                (GoalieGameFeatures.player_id == GoalieGameLog.player_id)
+            )
+        )
+    )
+    
+    new_goalie_features = [row for row in (await session.execute(goalie_window_query)).mappings().all() if row["rolling_x_goals_against"] is not None]
+    if new_goalie_features:
+        await session.execute(insert(GoalieGameFeatures), new_goalie_features)
+
+    # Team Portion, Add later
+    
+    await session.commit()

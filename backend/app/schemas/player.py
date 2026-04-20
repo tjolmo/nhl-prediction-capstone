@@ -122,3 +122,27 @@ class PlayerSearchResultOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+class PlayerPredictionOut(BaseModel):
+    """Output model for a player's prediction"""
+    goals: float
+    assists: float
+    points: float
+    prob_goal: float | None = None
+    prob_assist: float | None = None
+    prob_point: float | None = None
+
+    class Config:
+        from_attributes = True
+
+class GoaliePredictionOut(BaseModel):
+    """Output model for a goalie's prediction"""
+    goals_against: float
+    saves: float
+    save_percentage: float | None = None
+    prob_shutout: float | None = None
+    prob_quality_start: float | None = None
+
+    class Config:
+        from_attributes = True
+    
