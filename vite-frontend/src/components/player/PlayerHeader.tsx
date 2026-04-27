@@ -1,5 +1,6 @@
 import type { FC } from "react";
 import type { PlayerHeaderProps } from "../../types/player";
+import { Link } from "react-router-dom";
 
 export const PlayerHeader: FC<PlayerHeaderProps> = ({
   name,
@@ -37,7 +38,7 @@ export const PlayerHeader: FC<PlayerHeaderProps> = ({
         <h1 className="text-2xl font-black text-slate-800 tracking-tight">{name}</h1>
         <div className="flex items-center justify-center gap-2 mt-1">
           <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-full">
-            {team}
+            <Link to={`/roster/${team}`}>{team}</Link>
           </span>
           <span className="text-xs text-slate-400">·</span>
           <span className="text-xs font-semibold text-slate-500">{position}</span>

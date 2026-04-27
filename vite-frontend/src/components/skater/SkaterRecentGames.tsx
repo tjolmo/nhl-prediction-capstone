@@ -6,7 +6,6 @@ const statKeys: SkaterStatKey[] = ["goals", "assists", "points"];
 
 export const SkaterRecentGames = () => {
   const { recentGames } = useOutletContext<SkaterData>();
-
   return (
     <div className="bg-white rounded-2xl shadow-lg shadow-slate-200/50 overflow-hidden">
       <div className="px-5 py-4 border-b border-slate-100">

@@ -11,7 +11,6 @@ export const PositionGroup: FC<PositionGroupProps> = ({
 
   return (
     <div className="space-y-3">
-      {/* Section header — mirrors the stat row style from SchedulePage */}
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-2">
           <div className="w-1 h-5 rounded-full bg-blue-600" />
@@ -25,7 +24,6 @@ export const PositionGroup: FC<PositionGroupProps> = ({
         <div className="flex-1 h-px bg-slate-200" />
       </div>
 
-      {/* Responsive grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
         {players.map((player, i) => (
           <PlayerCard
