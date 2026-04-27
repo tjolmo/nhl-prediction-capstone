@@ -149,3 +149,48 @@ class GoalieGameFeatures(Base):
     rolling_x_freeze: Mapped[float] = mapped_column(nullable=False)
     last_updated: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=datetime.datetime.now(datetime.timezone.utc), onupdate=datetime.datetime.now(datetime.timezone.utc))
     ForeignKeyConstraint(["game_id", "player_id"], ["goalie_game_logs.game_id", "goalie_game_logs.player_id"]),
+
+class TeamGameLog(Base):
+    __tablename__ = "team_game_logs"
+    game_id: Mapped[int] = mapped_column(ForeignKey("games.id"), primary_key=True)
+    team_tri_code: Mapped[str] = mapped_column(ForeignKey("teams.tri_code"), primary_key=True)
+    opposing_team_tri_code: Mapped[str] = mapped_column(ForeignKey("teams.tri_code"), nullable=False)
+    season: Mapped[int] = mapped_column(nullable=False)
+    game_date: Mapped[int] = mapped_column(nullable=False)
+    home_away: Mapped[str] = mapped_column(nullable=False)
+    goals: Mapped[int] = mapped_column(nullable=False)
+    x_goals: Mapped[float] = mapped_column(nullable=False)
+    shot_attempts: Mapped[int] = mapped_column(nullable=False)
+    high_danger_shots: Mapped[int] = mapped_column(nullable=False)
+    points: Mapped[int] = mapped_column(nullable=False)
+    primary_assists: Mapped[int] = mapped_column(nullable=False)
+    avg_on_ice_x_goals_percentage: Mapped[float] = mapped_column(nullable=False)
+    avg_game_score: Mapped[float] = mapped_column(nullable=False)
+    goals_against: Mapped[int] = mapped_column(nullable=False)
+    x_goals_against: Mapped[float] = mapped_column(nullable=False)
+    sog_against: Mapped[int] = mapped_column(nullable=False)
+    high_danger_shots_against: Mapped[int] = mapped_column(nullable=False)
+    high_danger_x_goals_against: Mapped[float] = mapped_column(nullable=False)
+    flurry_adjusted_x_goals_against: Mapped[float] = mapped_column(nullable=False)
+    last_updated: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=datetime.datetime.now(datetime.timezone.utc), onupdate=datetime.datetime.now(datetime.timezone.utc))
+
+class TeamGameFeatures(Base):
+    __tablename__ = "team_game_features"
+    game_id: Mapped[int] = mapped_column(primary_key=True)
+    team_tri_code: Mapped[str] = mapped_column(primary_key=True)
+    rolling_goals: Mapped[float] = mapped_column(nullable=False)
+    rolling_x_goals: Mapped[float] = mapped_column(nullable=False)
+    rolling_shot_attempts: Mapped[float] = mapped_column(nullable=False)
+    rolling_high_danger_shots: Mapped[float] = mapped_column(nullable=False)
+    rolling_points: Mapped[float] = mapped_column(nullable=False)
+    rolling_primary_assists: Mapped[float] = mapped_column(nullable=False)
+    rolling_avg_on_ice_x_goals_percentage: Mapped[float] = mapped_column(nullable=False)
+    rolling_avg_game_score: Mapped[float] = mapped_column(nullable=False)
+    rolling_goals_against: Mapped[float] = mapped_column(nullable=False)
+    rolling_x_goals_against: Mapped[float] = mapped_column(nullable=False)
+    rolling_sog_against: Mapped[float] = mapped_column(nullable=False)
+    rolling_high_danger_shots_against: Mapped[float] = mapped_column(nullable=False)
+    rolling_high_danger_x_goals_against: Mapped[float] = mapped_column(nullable=False)
+    rolling_flurry_adjusted_x_goals_against: Mapped[float] = mapped_column(nullable=False)
+    last_updated: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=datetime.datetime.now(datetime.timezone.utc), onupdate=datetime.datetime.now(datetime.timezone.utc))
+    ForeignKeyConstraint(["game_id", "team_tri_code"], ["team_game_logs.game_id", "team_game_logs.team_tri_code"]),
