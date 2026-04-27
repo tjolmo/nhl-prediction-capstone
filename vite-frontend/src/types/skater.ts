@@ -4,6 +4,9 @@ export interface SkaterGamePredictions {
   goals: number;
   assists: number;
   points: number;
+  prob_goal: number;
+  prob_assist: number;
+  prob_point: number;
 }
 
 export interface SkaterSeasonStats {
@@ -22,7 +25,7 @@ export interface SkaterGameStats {
   home_away: "HOME" | "AWAY";
 }
 
-export interface SkaterData extends PlayerData{
+export interface SkaterData extends PlayerData {
   gamePredictions: SkaterGamePredictions;
   seasonStats: SkaterSeasonStats;
   recentGames: SkaterGameStats[];

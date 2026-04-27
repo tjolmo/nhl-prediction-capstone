@@ -1,13 +1,7 @@
 import { useState, useEffect } from "react";
-import { getSkaterSeasonStats, getSkaterRecentGames } from "../api/skater";
-import type { SkaterData, SkaterGamePredictions } from "../types/skater";
+import { getSkaterSeasonStats, getSkaterRecentGames, getSkaterPredictions } from "../api/skater";
+import type { SkaterData } from "../types/skater";
 import { getPlayerBasicInfo, getPlayerUpcomingGame } from "../api/player";
-
-const MOCK_PREDICTIONS: SkaterGamePredictions = {
-  goals: 0,
-  assists: 0,
-  points: 0,
-};
 
 export function useSkater(id: number) {
   const [data, setData] = useState<SkaterData | null>(null);
@@ -17,17 +11,18 @@ export function useSkater(id: number) {
   useEffect(() => {
     Promise.all([
       getPlayerBasicInfo(id),
-      getPlayerUpcomingGame(id),
-      getSkaterSeasonStats(id),
-      getSkaterRecentGames(id),
+      getPlayerUpcomingGame(id).catch(() => null),
+      getSkaterSeasonStats(id).catch(() => null),
+      getSkaterRecentGames(id).catch(() => null),
+      getSkaterPredictions(id).catch(() => null),
     ])
-      .then(([playerInfo, upcomingGame, seasonStats, recentGames]) => {
+      .then(([playerInfo, upcomingGame, seasonStats, recentGames, gamePredictions]) => {
         setData({
           ...playerInfo,
-          upcomingGame,
-          gamePredictions: MOCK_PREDICTIONS,
-          seasonStats,
-          recentGames,
+          upcomingGame: upcomingGame!,
+          gamePredictions: gamePredictions!,
+          seasonStats: seasonStats!,
+          recentGames: recentGames!,
         });
       })
       .catch(setError)

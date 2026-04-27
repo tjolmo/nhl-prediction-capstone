@@ -1,12 +1,7 @@
 import { useState, useEffect } from "react";
-import { getGoalieSeasonStats, getGoalieRecentGames } from "../api/goalie";
+import { getGoalieSeasonStats, getGoalieRecentGames, getGoaliePredictions } from "../api/goalie";
 import { getPlayerBasicInfo, getPlayerUpcomingGame } from "../api/player";
-import type { GoalieData, GoalieGamePredictions } from "../types/goalie";
-
-const MOCK_PREDICTIONS: GoalieGamePredictions = {
-    saves: 0,
-    goals_against: 0,
-};
+import type { GoalieData } from "../types/goalie";
 
 export function useGoalie(id: number) {
   const [data, setData] = useState<GoalieData | null>(null);
@@ -16,17 +11,18 @@ export function useGoalie(id: number) {
   useEffect(() => {
     Promise.all([
       getPlayerBasicInfo(id),
-      getPlayerUpcomingGame(id),
-      getGoalieSeasonStats(id),
-      getGoalieRecentGames(id),
+      getPlayerUpcomingGame(id).catch(() => null),
+      getGoalieSeasonStats(id).catch(() => null),
+      getGoalieRecentGames(id).catch(() => null),
+      getGoaliePredictions(id).catch(() => null),
     ])
-      .then(([playerInfo, upcomingGame, seasonStats, recentGames]) => {
+      .then(([playerInfo, upcomingGame, seasonStats, recentGames, gamePredictions]) => {
         setData({
           ...playerInfo,
-          upcomingGame,
-          gamePredictions: MOCK_PREDICTIONS,
-          seasonStats,
-          recentGames,
+          upcomingGame: upcomingGame!,
+          gamePredictions: gamePredictions!,
+          seasonStats: seasonStats!,
+          recentGames: recentGames!,
         });
       })
       .catch(setError)

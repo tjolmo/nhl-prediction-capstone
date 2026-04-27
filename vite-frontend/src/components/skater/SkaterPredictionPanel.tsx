@@ -3,15 +3,18 @@ import type { SkaterData, SkaterStatKey } from "../../types/skater";
 import { PlayerPredictionCard } from "../player/PlayerPredictionCard";
 
 const statKeys: SkaterStatKey[] = ["goals", "assists", "points"];
-const trendColors: Record<SkaterStatKey, string> = {
-  goals: "bg-blue-500",
-  assists: "bg-indigo-500",
-  points: "bg-sky-500",
-};
 
 export const SkaterPredictionPanel = () => {
-  const { gamePredictions, seasonStats, recentGames } = useOutletContext<SkaterData>();
-
+  const { gamePredictions, recentGames } = useOutletContext<SkaterData>();
+  if (!gamePredictions || !recentGames) {
+    return (
+      <div className="bg-white rounded-2xl shadow-lg shadow-slate-200/50 p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <p className="text-xs font-semibold tracking-widest text-blue-500 uppercase mb-1">
+          No game predictions available
+        </p>
+      </div>
+    )
+  }
   return (
     <div className="space-y-4">
       <div className="flex gap-3">
@@ -21,7 +24,7 @@ export const SkaterPredictionPanel = () => {
           icon="🏒"
           color="text-blue-600"
           bgColor="bg-white shadow-lg shadow-slate-200/50"
-          subtext={`Season avg: ${(seasonStats.goals / seasonStats.games).toFixed(2)}/gm`}
+          subtext={`Prob: ${(gamePredictions.prob_goal * 100).toFixed(0)}%`}
         />
         <PlayerPredictionCard
           label="Assists"
@@ -29,7 +32,7 @@ export const SkaterPredictionPanel = () => {
           icon="🎯"
           color="text-indigo-600"
           bgColor="bg-white shadow-lg shadow-slate-200/50"
-          subtext={`Season avg: ${(seasonStats.assists / seasonStats.games).toFixed(2)}/gm`}
+          subtext={`Prob: ${(gamePredictions.prob_assist * 100).toFixed(0)}%`}
         />
         <PlayerPredictionCard
           label="Points"
@@ -37,11 +40,7 @@ export const SkaterPredictionPanel = () => {
           icon="⭐"
           color="text-sky-600"
           bgColor="bg-white shadow-lg shadow-slate-200/50"
-          subtext={
-            <span className="text-blue-200">
-              {`Season avg: ${(seasonStats.points / seasonStats.games).toFixed(2)}/gm`}
-            </span>
-          }
+          subtext={`Prob: ${(gamePredictions.prob_point * 100).toFixed(0)}%`}
         />
       </div>
 
@@ -62,7 +61,7 @@ export const SkaterPredictionPanel = () => {
                 {vals.map((v, i) => (
                   <div key={i} className="flex-1 flex flex-col items-center gap-0.5">
                     <div
-                      className={`w-full rounded-sm ${trendColors[stat]} transition-all duration-500 opacity-80`}
+                      className={`w-full rounded-sm transition-all duration-500 opacity-80`}
                       style={{
                         height: `${Math.max((v / max) * 100, 10)}%`,
                         animationDelay: `${i * 100}ms`,

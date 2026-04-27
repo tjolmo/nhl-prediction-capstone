@@ -5,11 +5,7 @@ import { PlayerPredictionCard } from "../player/PlayerPredictionCard";
 type TrendKey = "goals_against" | "saves" | "save_percentage";
 
 const trendKeys: TrendKey[] = ["goals_against", "saves", "save_percentage"];
-const trendColors: Record<TrendKey, string> = {
-  "goals_against": "bg-red-400",
-  "save_percentage": "bg-green-500",
-  "saves": "bg-blue-500",
-};
+
 const trendLabels: Record<TrendKey, string> = {
   goals_against: "Goals Against",
   saves: "Saves",
@@ -18,6 +14,15 @@ const trendLabels: Record<TrendKey, string> = {
 
 export const GoaliePredictionPanel = () => {
   const { gamePredictions, seasonStats, recentGames } = useOutletContext<GoalieData>();
+  if (!gamePredictions || !seasonStats || !recentGames) {
+    return (
+      <div className="bg-white rounded-2xl shadow-lg shadow-slate-200/50 p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <p className="text-xs font-semibold tracking-widest text-blue-500 uppercase mb-1">
+          No game predictions available
+        </p>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-4">
@@ -57,7 +62,7 @@ export const GoaliePredictionPanel = () => {
                 {vals.map((v, i) => (
                   <div key={i} className="flex-1 flex flex-col items-center gap-0.5">
                     <div
-                      className={`w-full rounded-sm ${trendColors[stat]} transition-all duration-500 opacity-80`}
+                      className="w-full rounded-sm transition-all duration-500 opacity-80"
                       style={{
                         height: `${Math.max((v / max) * 100, 10)}%`,
                         animationDelay: `${i * 100}ms`,
