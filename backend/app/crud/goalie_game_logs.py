@@ -10,8 +10,8 @@ async def upsert_scraped_goalie_game_logs(db: AsyncSession, game_logs_data: list
     """Upserts scraped goale game logs into local db GoalieGameLogs table."""
     if not game_logs_data:
         return
-    for i in range(0, len(game_logs_data), 1000):
-        batch = [log.model_dump() for log in game_logs_data[i : i + 1000]]
+    for i in range(0, len(game_logs_data), 500):
+        batch = [log.model_dump() for log in game_logs_data[i : i + 500]]
         stmt = insert(GoalieGameLog).values(batch)
         stmt = stmt.on_conflict_do_update(
             index_elements=['game_id', 'player_id'],
