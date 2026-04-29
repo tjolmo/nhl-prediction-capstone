@@ -1,3 +1,4 @@
+from app.crud.games import delete_games_for_team_in_the_future
 from app.crud.goalie_game_features import update_goalie_game_features
 from app.crud.skater_game_features import update_skater_game_features
 from external.moneypuck.player import scrape_all_goalie_game_logs, scrape_all_skater_game_logs, scrape_goalie_game_data, scrape_skater_game_data
@@ -63,6 +64,9 @@ async def fetch_current_schedules_for_all_teams(db: AsyncSession):
         if current_marked_upcoming_date is None or current_time >= current_marked_upcoming_date:
             schedule_data = await fetch_and_clean_team_schedule(tri_code, "now")
             if schedule_data:
+                # remove all games in database for this team that are in the future
+                await delete_games_for_team_in_the_future(db, tri_code)
+                # upsert all games
                 await upsert_scraped_games_from_schedule(db, schedule_data)
 
 async def fetch_all_season_schedules_for_all_teams(db: AsyncSession):
@@ -212,7 +216,7 @@ async def scrape_all_player_logs(db: AsyncSession, seasons:list[int]):
                     # remove from all_skaters
                     all_skaters = [skater for skater in all_skaters if skater.player_id != player]
             await upsert_scraped_game_logs(db, all_skaters)
-        all_goalies = scrape_all_goalie_game_logs 
+        all_goalies = scrape_all_goalie_game_logs(season) 
         if all_goalies:
             player_ids = [goalie.player_id for goalie in all_goalies]
             unique_player_ids = list(set(player_ids))

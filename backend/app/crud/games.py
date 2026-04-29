@@ -1,9 +1,10 @@
 from sqlalchemy.dialects.postgresql import insert
-from sqlalchemy import select
+from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 from ..models import Games
 from external.nhl.response_models import GameResponse
 import datetime
+
 async def upsert_scraped_games_from_schedule(db: AsyncSession, game_data: list[GameResponse]):
     """Upserts scraped game into local db Games table."""
     if not game_data:
@@ -120,3 +121,17 @@ async def get_all_games_for_date(db: AsyncSession, date: int) -> list[Games]:
     )
     games = result.scalars().all()
     return games
+
+async def get_game_by_id(db: AsyncSession, game_id: int) -> Games | None:
+    """Fetches a single game by its ID."""
+    result = await db.execute(select(Games).where(Games.id == game_id))
+    return result.scalar_one_or_none()
+
+async def delete_games_for_team_in_the_future(db: AsyncSession, tri_code: str):
+    """Deletes all games for a team in the future."""
+    stmt = delete(Games).where(
+            (Games.home_team_tri_code == tri_code) | (Games.away_team_tri_code == tri_code),
+            (Games.game_state == "FUT")
+        )
+    await db.execute(stmt)
+    await db.commit()
