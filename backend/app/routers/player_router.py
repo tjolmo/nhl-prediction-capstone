@@ -6,7 +6,7 @@ from app.schemas.player import GoalieLast5BasicStatsGetOut, GoalieSeasonBasicSta
 from app.crud.players import get_player_by_id, search_players_by_name, get_player_current_team_tri_code
 from app.crud.skater_game_logs import get_skater_last_5_basic_stats_from_db, get_player_game_log_by_game_and_player_id, get_skater_season_basic_stats_from_db, calculate_rolling_features_last_5_games
 from app.crud.goalie_game_logs import get_goalie_last_5_basic_stats_from_db, get_goalie_season_basic_stats_from_db, calculate_rolling_features_last_5_games_goalie
-from predictions.predict import load_skater_models, load_skater_clf_models, load_goalie_models, load_goalie_clf_models
+from predictions.predict import load_skater_models, load_skater_clf_models, load_goalie_models
 import numpy as np
 
 router = APIRouter(prefix="/players", tags=["players"])
@@ -229,8 +229,6 @@ async def get_goalie_prediction(player_id: int, db = Depends(get_db)):
                 goals_against=0.0,
                 saves=0.0,
                 save_percentage=None,
-                prob_shutout=None,
-                prob_quality_start=None,
             )
 
         goalie_next_game = await get_next_game_info_by_tri_code(db, player_current_team)
@@ -249,15 +247,6 @@ async def get_goalie_prediction(player_id: int, db = Depends(get_db)):
             preds = model.predict(X)
             result[f"pred_{target}"] = preds[0]
 
-        proba_result = {}
-        try:
-            clf_models = load_goalie_clf_models()
-            for target, model in clf_models.items():
-                proba = model.predict_proba(X)[:, 1]
-                proba_result[f"prob_{target}"] = float(proba[0])
-        except FileNotFoundError:
-            pass
-
         pred_ga = float(result["pred_goals_against"])
         pred_sog = float(result["pred_sog"])
         pred_saves = max(0.0, pred_sog - pred_ga)
@@ -267,8 +256,6 @@ async def get_goalie_prediction(player_id: int, db = Depends(get_db)):
             goals_against=round(pred_ga, 2),
             saves=round(pred_saves, 2),
             save_percentage=round(pred_sv_pct, 4) if pred_sv_pct is not None else None,
-            prob_shutout=round(proba_result["prob_shutout"], 4) if "prob_shutout" in proba_result else None,
-            prob_quality_start=round(proba_result["prob_quality_start"], 4) if "prob_quality_start" in proba_result else None,
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error retrieving prediction for goalie {player_id}: {e}")
