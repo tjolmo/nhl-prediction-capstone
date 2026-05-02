@@ -1,3 +1,4 @@
+from external.nhl.response_models import GameOdds
 import httpx
 
 async def fetch_and_get_players_in_a_game(game_id: int) -> list[int] | None:
@@ -21,3 +22,35 @@ async def fetch_and_get_players_in_a_game(game_id: int) -> list[int] | None:
         except Exception as e:
             print(f"Error scraping ID {game_id}: {e}")
             return None
+
+async def get_odds_for_current_games() -> list[GameOdds]:
+    base_url = "https://api-web.nhle.com/v1/partner-game/US/now"
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.get(base_url)
+            response.raise_for_status()
+            data = response.json()
+            games = data.get("games")
+            if not games or len(games) == 0:
+                return None
+        except Exception as e:
+            print(f"Error scraping odds: {e}")
+            return None
+
+        return_odds = []
+        for game in games:
+            game_id = game.get("gameId")
+            home_odds = game.get("homeTeam").get("odds")
+            away_odds = game.get("awayTeam").get("odds")
+            if home_odds and away_odds:
+                for odds in home_odds:
+                    if odds.get("description") == "PUCK_LINE":
+                        home_moneyline = odds.get("value")
+                        break
+                for odds in away_odds:
+                    if odds.get("description") == "PUCK_LINE":
+                        away_moneyline = odds.get("value")
+                        break
+            if home_moneyline and away_moneyline:
+                return_odds.append(GameOdds(game_id=game_id, home_moneyline=home_moneyline, away_moneyline=away_moneyline))
+        return return_odds

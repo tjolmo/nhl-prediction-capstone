@@ -113,3 +113,10 @@ class GameResponse(BaseModel):
     class Config:
         validate_by_name = True
         frozen = True
+
+
+class GameOdds(BaseModel):
+    """Cleaned NHL API Response for Odds Information"""
+    game_id: int
+    home_moneyline: float
+    away_moneyline: float
