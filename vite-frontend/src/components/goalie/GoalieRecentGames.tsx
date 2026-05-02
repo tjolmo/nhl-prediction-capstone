@@ -19,9 +19,8 @@ export const GoalieRecentGames = () => {
               {(["Date", "OPP", "SV", "SV%", "GA"] as const).map((h) => (
                 <th
                   key={h}
-                  className={`py-3 px-4 text-[10px] font-black tracking-widest text-slate-400 uppercase ${
-                    ["SV", "GA", "SV%"].includes(h) ? "text-center" : "text-left"
-                  }`}
+                  className={`py-3 px-4 text-[10px] font-black tracking-widest text-slate-400 uppercase ${["SV", "GA", "SV%"].includes(h) ? "text-center" : "text-left"
+                    }`}
                 >
                   {h}
                 </th>
@@ -44,7 +43,7 @@ export const GoalieRecentGames = () => {
               <td className="py-3 px-4 text-center text-sm font-black text-blue-700">
                 {recentGames.length > 0 ? (recentGames.reduce((s, g) => s + g.saves, 0) / recentGames.length).toFixed(1) : "0.0"}
               </td><td className="py-3 px-4 text-center text-sm font-black text-slate-600">
-                {recentGames.length > 0 ? (recentGames.reduce((s, g) => s + g.save_percentage, 0) / recentGames.length).toFixed(3) + "%" : "0.0%"}
+                {recentGames.length > 0 ? (recentGames.reduce((s, g) => s + g.save_percentage, 0) / recentGames.length).toFixed(3) + "" : "0.000"}
               </td>
               <td className="py-3 px-4 text-center text-sm font-black text-red-500">
                 {recentGames.length > 0 ? (recentGames.reduce((s, g) => s + g.goals_against, 0) / recentGames.length).toFixed(1) : "0.0"}

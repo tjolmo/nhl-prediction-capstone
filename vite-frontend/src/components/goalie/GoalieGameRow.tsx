@@ -26,7 +26,7 @@ export const GoalieGameRow: FC<GoalieGameRowProps> = ({ game_stats, index }) => 
       </td>
       <td className="py-3 px-4 text-center">
         <span className="text-sm font-bold text-slate-600">
-          {game_stats.save_percentage.toFixed(3)}%
+          {game_stats.save_percentage.toFixed(3)}
         </span>
       </td>
       <td className="py-3 px-4 text-center">
