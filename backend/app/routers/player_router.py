@@ -1,3 +1,5 @@
+from app.schemas.teams import TeamRosteredPlayer
+from app.crud.players import get_top_n_skaters
 import datetime
 from fastapi import APIRouter, Depends, HTTPException, Query
 from app.crud.games import get_next_game_info_by_tri_code
@@ -259,3 +261,24 @@ async def get_goalie_prediction(player_id: int, db = Depends(get_db)):
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error retrieving prediction for goalie {player_id}: {e}")
+
+@router.get("/top_skaters/{season}/{n}", status_code=200, response_model=list[TeamRosteredPlayer])
+async def get_top_skaters(season: int, n: int, db = Depends(get_db)):
+    """Fetches the top n skaters from the database."""
+    try:
+        top_n_skaters = await get_top_n_skaters(db, n, season)
+        if top_n_skaters:
+            return [TeamRosteredPlayer(
+                    id=player.id, 
+                    headshot=player.headshot,
+                    first_name=player.first_name, 
+                    current_team_tri_code=player.current_team_tri_code, 
+                    position=player.position if player.position else "U", 
+                    last_name=player.last_name, 
+                    number=player.number, 
+                    shoots_catches=player.shoots_catches if player.shoots_catches else "U"
+                ) for player in top_n_skaters]
+        else:
+            return []
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error retrieving top {n} skaters from DB: {e}")

@@ -1,3 +1,4 @@
+from app.models import SkaterGameLog
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy import select, func, update
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -134,3 +135,17 @@ async def get_player_current_team_tri_code(db: AsyncSession, player_id: int) -> 
     )
     player_tri_code = result.scalar_one_or_none()
     return player_tri_code
+
+async def get_top_n_skaters(db: AsyncSession, n: int, season: int) -> list[Player]:
+    """Fetches the top n skaters from the database."""
+    result = await db.execute(
+        select(Player).where(
+            Player.position != "G"
+        )
+        .join(SkaterGameLog, SkaterGameLog.player_id == Player.id)
+        .where(SkaterGameLog.season == season) 
+        .group_by(Player.id)
+        .order_by(func.sum(SkaterGameLog.points).desc())
+        .limit(n)
+    )
+    return result.scalars().all()

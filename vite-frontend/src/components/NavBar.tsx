@@ -4,7 +4,7 @@ import SearchBar from "./SearchBar";
 const TABS = [
   { to: "/schedule/today", label: "Today's Games", icon: "📅" },
   { to: "/teams", label: "Teams", icon: "🏒" },
-  { to: "/player/8478402", label: "Skater Example", icon: "🏒" },
+  { to: "/top-skaters/2025/50", label: "Top Skaters", icon: "🏒" },
   { to: "/goalie/8471734", label: "Goalie Example", icon: "🧤" },
 ];
 

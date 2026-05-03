@@ -1,5 +1,5 @@
 import { apiGet } from "./client";
-import type { PlayerData, UpcomingGame, SearchPlayerResult } from "../types/player";
+import type { PlayerData, UpcomingGame, SearchPlayerResult, PlayerFullData } from "../types/player";
 
 export const getPlayerBasicInfo = (id: number) =>
     apiGet<PlayerData>(`/players/player/${id}/basic_data`);
@@ -9,3 +9,6 @@ export const getPlayerUpcomingGame = (id: number) =>
 
 export const getSearchPlayer = (query: string, limit: number = 10) =>
     apiGet<SearchPlayerResult[]>(`/players/search?q=${encodeURIComponent(query)}&limit=${limit}`);
+
+export const getTopSkaters = (season: number, n: number) =>
+    apiGet<PlayerFullData[]>(`/players/top_skaters/${season}/${n}`);
