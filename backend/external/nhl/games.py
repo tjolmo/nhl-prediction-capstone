@@ -1,3 +1,4 @@
+from external.nhl.response_models import GameResponse
 from external.nhl.response_models import GameOdds
 import httpx
 
@@ -54,3 +55,20 @@ async def get_odds_for_current_games() -> list[GameOdds]:
             if home_moneyline and away_moneyline:
                 return_odds.append(GameOdds(game_id=game_id, home_moneyline=home_moneyline, away_moneyline=away_moneyline))
         return return_odds
+
+async def get_current_scores() -> list[GameResponse]:
+    base_url = "https://api-web.nhle.com/v1/score/now"
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.get(base_url, follow_redirects=True)
+            response.raise_for_status()
+            data = response.json()
+            games = data.get("games")
+            if not games or len(games) == 0:
+                return None
+        except Exception as e:
+            print(f"Error scraping scores: {e}")
+            return None
+        
+        print(games)
+        return [GameResponse(**game) for game in games]
