@@ -149,3 +149,16 @@ async def get_top_n_skaters(db: AsyncSession, n: int, season: int) -> list[Playe
         .limit(n)
     )
     return result.scalars().all()
+
+async def get_player_by_name_and_roster_options(db: AsyncSession, first_name: str, last_name: str, potential_tri_codes:list[str]) -> Player | None:
+    """Fetches player from db by name."""
+    result = await db.execute(
+        select(Player).where(
+            Player.first_name == first_name,
+            Player.last_name == last_name,
+            Player.current_team_tri_code.in_(potential_tri_codes)
+        )
+    )
+    return result.scalar_one_or_none()
+    
+    

@@ -144,3 +144,11 @@ class GoaliePredictionOut(BaseModel):
     class Config:
         from_attributes = True
     
+class PlayerPropOut(BaseModel):
+    """Output model for a player's prop"""
+    game_id: int
+    player_id: int
+    prop_type: str
+    over_under: str
+    odds: float
+    line: float

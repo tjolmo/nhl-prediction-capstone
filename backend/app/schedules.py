@@ -1,3 +1,9 @@
+from app.crud.props import upsert_player_props
+from app.schemas.player import PlayerPropOut
+from app.crud.players import get_player_by_name_and_roster_options
+from app.crud.teams import search_teams_by_name
+from app.crud.games import get_all_games_for_date
+from external.odds_api.player_props import get_upcoming_games_odds_api, get_player_props
 from app.crud.goalie_game_features import update_goalie_game_features
 from app.crud.skater_game_features import update_skater_game_features
 from external.moneypuck.player import scrape_all_goalie_game_logs, scrape_all_skater_game_logs
@@ -144,3 +150,63 @@ async def fetch_current_scores():
     async with AsyncSessionLocal() as db:
         scores = await get_current_scores()
         await upsert_scraped_games_from_schedule(db, scores)
+
+async def fetch_current_player_props():
+    start_time = datetime.datetime.now(datetime.timezone.utc)
+    end_time = start_time + datetime.timedelta(days=1)
+    int_date = int(start_time.strftime("%Y%m%d"))
+    async with AsyncSessionLocal() as db:
+        events = await get_upcoming_games_odds_api(start_time, end_time)
+        all_games_today = await get_all_games_for_date(db, int_date)
+        #match to games in db
+        for event in events:
+            home_team_in_db = await search_teams_by_name(db, event.home_team, 1)
+            away_team_in_db = await search_teams_by_name(db, event.away_team, 1)
+            potential_tri_codes = []
+
+            home_tri_code = None
+            if home_team_in_db:
+                home_tri_code = home_team_in_db[0].tri_code
+                potential_tri_codes.append(home_tri_code)
+            away_tri_code = None
+            if away_team_in_db:
+                away_tri_code = away_team_in_db[0].tri_code
+                potential_tri_codes.append(away_tri_code)
+            
+            if len(potential_tri_codes) == 0:
+                print(f"No team found for event {event.event_id}")
+                continue
+
+            game_id = None
+            for game in all_games_today:
+                if game.home_team_tri_code == home_tri_code and game.away_team_tri_code == away_tri_code:
+                    game_id = game.id
+                    break
+            if game_id is None:
+                print(f"No game found for event {event.event_id}")
+                continue
+
+            player_props = await get_player_props(event.event_id)
+            props_to_upsert = []
+            for prop in player_props:
+                player = await get_player_by_name_and_roster_options(db, prop.first_name, prop.last_name, potential_tri_codes)
+                if player is None:
+                    print(f"No player found for prop {prop.first_name} {prop.last_name}")
+                    continue
+                props_to_upsert.append(PlayerPropOut(
+                    game_id=game_id,
+                    player_id=player.id,
+                    prop_type=prop.prop_type,
+                    over_under=prop.over_under,
+                    odds=prop.odds,
+                    line=prop.line
+                ))
+            
+            if len(props_to_upsert) > 0:
+                # remove duplicates
+                seen = {}
+                for prop in props_to_upsert:
+                    key = (prop.game_id, prop.player_id, prop.prop_type, prop.over_under)
+                    seen[key] = prop
+                await upsert_player_props(db, list(seen.values()))
+                
