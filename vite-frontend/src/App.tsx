@@ -11,7 +11,7 @@ import RosterPage from "./pages/RosterPage";
 import DailySchedulePage from "./pages/DailySchedulePage";
 import TeamsPage from "./pages/TeamsPage";
 import SearchResultsPage from "./pages/SearchResultsPage";
-import TopSkatersPage from "./pages/TopSkatersPage";
+import TopPlayersPage from "./pages/TopPlayersPage";
 
 export default function App() {
   return (
@@ -35,7 +35,7 @@ export default function App() {
       <Route path="/roster/:tricode" element={<RosterPage />} />
       <Route path="/teams" element={<TeamsPage />} />
       <Route path="/search" element={<SearchResultsPage />} />
-      <Route path="/top-skaters/:season/:n" element={<TopSkatersPage />} />
+      <Route path="/top-players/:player_type/:season/:n" element={<TopPlayersPage />} />
     </Routes>
   );
 }

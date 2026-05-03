@@ -4,8 +4,8 @@ import SearchBar from "./SearchBar";
 const TABS = [
   { to: "/schedule/today", label: "Today's Games", icon: "📅" },
   { to: "/teams", label: "Teams", icon: "🏒" },
-  { to: "/top-skaters/2025/50", label: "Top Skaters", icon: "🏒" },
-  { to: "/goalie/8471734", label: "Goalie Example", icon: "🧤" },
+  { to: "/top-players/skaters/2025/50", label: "Top Skaters", icon: "🏒" },
+  { to: "/top-players/goalies/2025/30", label: "Top Goalies", icon: "🧤" },
 ];
 
 export default function Navbar() {

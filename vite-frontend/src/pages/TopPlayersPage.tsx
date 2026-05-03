@@ -1,15 +1,15 @@
 import type { FC } from "react";
-import { useTopSkaters } from "../hooks/useTopSkaters";
+import { useTopPlayers } from "../hooks/useTopPlayers";
 import { PlayerCard } from "../components/roster/PlayerCard";
 import LoadingPage from "./LoadingPage";
 import ErrorPage from "./ErrorPage";
 import { useParams } from "react-router-dom";
 
-export const TopSkatersPage: FC = () => {
-  const { season, n } = useParams<{ season: string; n: string }>();
-  const { data: skaters, loading, error } = useTopSkaters(Number(season), Number(n));
+export const TopPlayersPage: FC = () => {
+  const { season, n, player_type } = useParams<{ season: string; n: string; player_type: "skaters" | "goalies" }>();
+  const { data: players, loading, error } = useTopPlayers(Number(season), Number(n), player_type!);
 
-  if (error) return <ErrorPage message="Error loading top skaters." />;
+  if (error) return <ErrorPage message="Error loading top players." />;
   if (loading) return <LoadingPage />;
 
   return (
@@ -29,14 +29,14 @@ export const TopSkatersPage: FC = () => {
             />
             <div className="absolute inset-0 flex flex-col items-center justify-center">
               <h1 className="text-white font-black text-2xl tracking-tight drop-shadow">
-                Top Skaters
+                Top {player_type === "skaters" ? "Skaters" : "Goalies"}
               </h1>
             </div>
           </div>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-          {(skaters ?? []).map((player, index) => (
+          {(players ?? []).map((player, index) => (
             <PlayerCard key={player.id} player={player} index={index} />
           ))}
         </div>
@@ -45,4 +45,4 @@ export const TopSkatersPage: FC = () => {
   );
 };
 
-export default TopSkatersPage;
+export default TopPlayersPage;

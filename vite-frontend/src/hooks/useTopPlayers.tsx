@@ -1,17 +1,17 @@
 import { useState, useEffect } from "react";
 import type { PlayerFullData } from "../types/player";
-import { getTopSkaters } from "../api/player";
+import { getTopPlayers } from "../api/player";
 
-export function useTopSkaters(season: number, n: number) {
+export function useTopPlayers(season: number, n: number, player_type: "skaters" | "goalies") {
     const [data, setData] = useState<PlayerFullData[] | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<Error | null>(null);
 
     useEffect(() => {
-        getTopSkaters(season, n)
+        getTopPlayers(season, n, player_type)
             .then(setData)
             .catch(setError)
             .finally(() => setLoading(false));
-    }, [season, n]);
+    }, [season, n, player_type]);
     return { data, loading, error };
 }

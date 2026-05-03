@@ -1,3 +1,4 @@
+from app.crud.players import get_top_n_goalies
 from app.crud.props import get_player_props_from_db
 from app.schemas.teams import TeamRosteredPlayer
 from app.crud.players import get_top_n_skaters
@@ -265,12 +266,17 @@ async def get_goalie_prediction(player_id: int, db = Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error retrieving prediction for goalie {player_id}: {e}")
 
-@router.get("/top_skaters/{season}/{n}", status_code=200, response_model=list[TeamRosteredPlayer])
-async def get_top_skaters(season: int, n: int, db = Depends(get_db)):
-    """Fetches the top n skaters from the database."""
+@router.get("/top_players/{player_type}/{season}/{n}", status_code=200, response_model=list[TeamRosteredPlayer])
+async def get_top_players(player_type: str, season: int, n: int, db = Depends(get_db)):
+    """Fetches the top n skaters or goalies from the database."""
     try:
-        top_n_skaters = await get_top_n_skaters(db, n, season)
-        if top_n_skaters:
+        if player_type == "skaters":
+            top_n_players = await get_top_n_skaters(db, n, season)
+        elif player_type == "goalies":
+            top_n_players = await get_top_n_goalies(db, n, season)
+        else:
+            raise HTTPException(status_code=400, detail=f"Invalid player type: {player_type}")
+        if top_n_players:
             return [TeamRosteredPlayer(
                     id=player.id, 
                     headshot=player.headshot,
@@ -280,7 +286,7 @@ async def get_top_skaters(season: int, n: int, db = Depends(get_db)):
                     last_name=player.last_name, 
                     number=player.number, 
                     shoots_catches=player.shoots_catches if player.shoots_catches else "U"
-                ) for player in top_n_skaters]
+                ) for player in top_n_players]
         else:
             return []
     except Exception as e:
