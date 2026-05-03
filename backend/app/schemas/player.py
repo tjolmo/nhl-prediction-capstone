@@ -140,8 +140,6 @@ class GoaliePredictionOut(BaseModel):
     goals_against: float
     saves: float
     save_percentage: float | None = None
-    prob_shutout: float | None = None
-    prob_quality_start: float | None = None
 
     class Config:
         from_attributes = True
