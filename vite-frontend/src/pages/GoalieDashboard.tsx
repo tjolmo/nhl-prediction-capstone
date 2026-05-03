@@ -21,7 +21,8 @@ export default function GoalieDashboard() {
 
     const seasonSummary = [
         { label: "GP", value: seasonStats.games },
-        { label: "SV%", value: (seasonStats.save_percentage * 100).toFixed(1) },
+        { label: "SV%", value: seasonStats.save_percentage.toFixed(3) },
+        { label: "GAA", value: seasonStats.gaa.toFixed(2) }
     ];
 
     return (

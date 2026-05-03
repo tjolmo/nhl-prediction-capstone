@@ -7,11 +7,11 @@ import LoadingPage from "./LoadingPage";
 import ErrorPage from "./ErrorPage";
 
 const POSITION_GROUPS: PositionGroupConfig[] = [
-  { key: "C", label: "Centers", plural: "Centers" },
-  { key: "L", label: "Left Wings", plural: "Left Wings" },
-  { key: "R", label: "Right Wings", plural: "Right Wings" },
-  { key: "D", label: "Defensemen", plural: "Defensemen" },
-  { key: "G", label: "Goalies", plural: "Goalies" },
+  { key: "C", label: "Center", plural: "Centers" },
+  { key: "L", label: "Left Wing", plural: "Left Wings" },
+  { key: "R", label: "Right Wing", plural: "Right Wings" },
+  { key: "D", label: "Defenseman", plural: "Defensemen" },
+  { key: "G", label: "Goalie", plural: "Goalies" },
   { key: "U", label: "Unknown", plural: "Unknown" },
 ];
 
@@ -65,81 +65,46 @@ export const RosterPage: FC = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-4 divide-x divide-slate-100 bg-slate-50 rounded-b-3xl">
-            {loading ? (
-              [0, 1, 2, 3].map((i) => (
-                <div key={i} className="py-3 text-center">
-                  <div className="h-6 w-8 bg-slate-200 rounded-lg mx-auto animate-pulse" />
-                  <div className="h-3 w-14 bg-slate-100 rounded-lg mx-auto mt-1.5 animate-pulse" />
-                </div>
-              ))
-            ) : (
-              <>
-                {[
-                  { label: "Players", value: totalPlayers },
-                  { label: "Skaters", value: totalSkaters },
-                  { label: "Goalies", value: totalGoalies },
-                  { label: "Unknown", value: totalUnknown },
-                ].map((s) => (
-                  <div key={s.label} className="py-3 text-center">
-                    <p className="text-lg font-black text-slate-800">{s.value}</p>
-                    <p className="text-[10px] font-semibold tracking-wider text-slate-400 uppercase">
-                      {s.label}
-                    </p>
-                  </div>
-                ))}
-                <Link
-                  to={`/schedule/team/${tricode}`}
-                  className="py-3 text-center flex flex-col items-center justify-center hover:bg-blue-50 transition-colors group"
-                >
-                  <p className="text-lg font-black text-blue-600 group-hover:text-blue-700">→</p>
-                  <p className="text-[10px] font-semibold tracking-wider text-blue-500 uppercase">
-                    Schedule
-                  </p>
-                </Link>
-              </>
-            )}
-          </div>
-        </div>
-
-        {loading ? (
-          <div className="space-y-6">
-            {POSITION_GROUPS.map((group) => (
-              <div key={group.key} className="space-y-3">
-                <div className="flex items-center gap-3">
-                  <div className="h-4 w-24 bg-slate-200 rounded-lg animate-pulse" />
-                  <div className="flex-1 h-px bg-slate-200" />
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-                  {Array.from({
-                    length: group.key === "D" ? 4 : group.key === "G" ? 2 : group.key === "U" ? 1 : 3,
-                  }).map((_, i) => (
-                    <div
-                      key={i}
-                      className="rounded-2xl bg-white shadow-lg shadow-slate-200/50 h-44 animate-pulse"
-                    />
-                  ))}
-                </div>
+          <div className="grid grid-cols-5 divide-x divide-slate-100 bg-slate-50 rounded-b-3xl">
+            {[
+              { label: "Players", value: totalPlayers },
+              { label: "Skaters", value: totalSkaters },
+              { label: "Goalies", value: totalGoalies },
+              { label: "Unknown", value: totalUnknown },
+            ].map((s) => (
+              <div key={s.label} className="py-3 text-center">
+                <p className="text-lg font-black text-slate-800">{s.value}</p>
+                <p className="text-[10px] font-semibold tracking-wider text-slate-400 uppercase">
+                  {s.label}
+                </p>
               </div>
             ))}
+            <Link
+              to={`/schedule/team/${tricode}`}
+              className="py-3 text-center flex flex-col items-center justify-center hover:bg-blue-50 transition-colors group"
+            >
+              <p className="text-lg font-black text-blue-600 group-hover:text-blue-700">→</p>
+              <p className="text-[10px] font-semibold tracking-wider text-blue-500 uppercase">
+                Schedule
+              </p>
+            </Link>
           </div>
-        ) : (
-          <div className="space-y-6">
-            {POSITION_GROUPS.map((group) => {
-              const groupPlayers = grouped[group.key];
-              const start = cardIndex;
-              cardIndex += groupPlayers.length;
-              return (
-                <PositionGroup
-                  key={group.key}
-                  label={group.label}
-                  players={groupPlayers}
-                  startIndex={start}
-                />
-              );
-            })}
-          </div>
-        )}
+        </div>
+        <div className="space-y-6">
+          {POSITION_GROUPS.map((group) => {
+            const groupPlayers = grouped[group.key];
+            const start = cardIndex;
+            cardIndex += groupPlayers.length;
+            return (
+              <PositionGroup
+                key={group.key}
+                label={group.plural}
+                players={groupPlayers}
+                startIndex={start}
+              />
+            );
+          })}
+        </div>
       </div>
     </div>
   );
