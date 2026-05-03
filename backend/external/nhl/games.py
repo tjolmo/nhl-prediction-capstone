@@ -45,11 +45,11 @@ async def get_odds_for_current_games() -> list[GameOdds]:
             away_odds = game.get("awayTeam").get("odds")
             if home_odds and away_odds:
                 for odds in home_odds:
-                    if odds.get("description") == "PUCK_LINE":
+                    if odds.get("description") == "MONEY_LINE_2_WAY_TNB":
                         home_moneyline = odds.get("value")
                         break
                 for odds in away_odds:
-                    if odds.get("description") == "PUCK_LINE":
+                    if odds.get("description") == "MONEY_LINE_2_WAY_TNB":
                         away_moneyline = odds.get("value")
                         break
             if home_moneyline and away_moneyline:
