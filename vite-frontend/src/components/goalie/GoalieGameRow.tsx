@@ -13,7 +13,9 @@ export const GoalieGameRow: FC<GoalieGameRowProps> = ({ game_stats, index }) => 
       </td>
       <td className="py-3 px-4">
         <span className="text-sm font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md">
-          <Link to={`/roster/${game_stats.opposing_team_tricode}`}>{game_stats.opposing_team_tricode}</Link>
+          <Link to={`/roster/${game_stats.opposing_team_tricode}`}>
+            {game_stats.home_away === "HOME" ? "vs " : "@ "}{game_stats.opposing_team_tricode}
+          </Link>
         </span>
       </td>
       <td className="py-3 px-4 text-center">
