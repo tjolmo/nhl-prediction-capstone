@@ -74,3 +74,12 @@ export interface SearchPlayerResult {
     current_team_tri_code: string | null;
     position: Position | null;
 }
+
+export interface PlayerPropData {
+    game_id: number;
+    player_id: number;
+    prop_type: string;
+    over_under: string;
+    line: number;
+    odds: number;
+}

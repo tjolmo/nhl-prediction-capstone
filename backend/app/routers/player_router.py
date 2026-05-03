@@ -1,10 +1,13 @@
+from app.crud.props import get_player_props_from_db
 from app.schemas.teams import TeamRosteredPlayer
 from app.crud.players import get_top_n_skaters
 import datetime
 from fastapi import APIRouter, Depends, HTTPException, Query
 from app.crud.games import get_next_game_info_by_tri_code
 from app.dependencies import get_db
-from app.schemas.player import GoalieLast5BasicStatsGetOut, GoalieSeasonBasicStatsGetOut, GoaliePredictionOut, PlayerGameLogGetOut, GoalieGameLogGetOut, PlayerNextGameGetOut, SkaterLast5BasicStatsGetOut, SkaterSeasonBasicStatsGetOut, PlayerBasicInfoOut, PlayerSearchResultOut, PlayerPredictionOut
+from app.schemas.player import (GoalieLast5BasicStatsGetOut, GoalieSeasonBasicStatsGetOut, GoaliePredictionOut, PlayerGameLogGetOut, GoalieGameLogGetOut, 
+                                PlayerNextGameGetOut, SkaterLast5BasicStatsGetOut, SkaterSeasonBasicStatsGetOut, PlayerBasicInfoOut, 
+                                PlayerSearchResultOut, PlayerPredictionOut, PlayerPropOut)
 from app.crud.players import get_player_by_id, search_players_by_name, get_player_current_team_tri_code
 from app.crud.skater_game_logs import get_skater_last_5_basic_stats_from_db, get_player_game_log_by_game_and_player_id, get_skater_season_basic_stats_from_db, calculate_rolling_features_last_5_games
 from app.crud.goalie_game_logs import get_goalie_last_5_basic_stats_from_db, get_goalie_season_basic_stats_from_db, calculate_rolling_features_last_5_games_goalie
@@ -282,3 +285,12 @@ async def get_top_skaters(season: int, n: int, db = Depends(get_db)):
             return []
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error retrieving top {n} skaters from DB: {e}")
+
+@router.get("/props/{player_id}", status_code=200, response_model=list[PlayerPropOut])
+async def get_player_props(player_id: int, db = Depends(get_db)):
+    """Fetches player props for a player from the database."""
+    try:
+        player_props = await get_player_props_from_db(db, player_id)
+        return player_props
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error retrieving player props from DB: {e}")

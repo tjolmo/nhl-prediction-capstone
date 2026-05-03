@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { getSkaterSeasonStats, getSkaterRecentGames, getSkaterPredictions } from "../api/skater";
 import type { SkaterData } from "../types/skater";
-import { getPlayerBasicInfo, getPlayerUpcomingGame } from "../api/player";
+import { getPlayerBasicInfo, getPlayerUpcomingGame, getPlayerProps } from "../api/player";
 
 export function useSkater(id: number) {
   const [data, setData] = useState<SkaterData | null>(null);
@@ -15,14 +15,16 @@ export function useSkater(id: number) {
       getSkaterSeasonStats(id).catch(() => null),
       getSkaterRecentGames(id).catch(() => null),
       getSkaterPredictions(id).catch(() => null),
+      getPlayerProps(id),
     ])
-      .then(([playerInfo, upcomingGame, seasonStats, recentGames, gamePredictions]) => {
+      .then(([playerInfo, upcomingGame, seasonStats, recentGames, gamePredictions, playerProps]) => {
         setData({
           ...playerInfo,
           upcomingGame: upcomingGame!,
           gamePredictions: gamePredictions!,
           seasonStats: seasonStats!,
           recentGames: recentGames!,
+          playerProps: playerProps,
         });
       })
       .catch(setError)

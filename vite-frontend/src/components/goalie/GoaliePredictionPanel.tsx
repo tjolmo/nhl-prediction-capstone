@@ -1,6 +1,7 @@
 import { useOutletContext } from "react-router-dom";
 import type { GoalieData } from "../../types/goalie";
 import { PlayerPredictionCard } from "../player/PlayerPredictionCard";
+import { PlayerPropCard } from "../player/PlayerPropCard";
 
 type TrendKey = "goals_against" | "saves" | "save_percentage";
 
@@ -13,7 +14,7 @@ const trendLabels: Record<TrendKey, string> = {
 };
 
 export const GoaliePredictionPanel = () => {
-  const { gamePredictions, seasonStats, recentGames } = useOutletContext<GoalieData>();
+  const { gamePredictions, seasonStats, recentGames, playerProps } = useOutletContext<GoalieData>();
   if (!gamePredictions || !seasonStats || !recentGames) {
     return (
       <div className="bg-white rounded-2xl shadow-lg shadow-slate-200/50 p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -44,6 +45,13 @@ export const GoaliePredictionPanel = () => {
           subtext={`Season GAA: ${seasonStats.gaa.toFixed(2)}`}
         />
       </div>
+      {playerProps.length > 0 && (
+        <div className={`grid grid-cols-2`}>
+          {playerProps.map((prop, index) => (
+            <PlayerPropCard key={index} {...prop} />
+          ))}
+        </div>
+      )}
 
       <div className="bg-white rounded-2xl shadow-lg shadow-slate-200/50 p-5 space-y-4">
         <p className="text-xs font-semibold tracking-widest text-slate-400 uppercase">

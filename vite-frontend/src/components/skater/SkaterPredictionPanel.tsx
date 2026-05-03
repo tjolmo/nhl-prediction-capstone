@@ -1,11 +1,12 @@
 import { useOutletContext } from "react-router-dom";
 import type { SkaterData, SkaterStatKey } from "../../types/skater";
 import { PlayerPredictionCard } from "../player/PlayerPredictionCard";
+import { PlayerPropCard } from "../player/PlayerPropCard";
 
 const statKeys: SkaterStatKey[] = ["goals", "assists", "points"];
 
 export const SkaterPredictionPanel = () => {
-  const { gamePredictions, recentGames } = useOutletContext<SkaterData>();
+  const { gamePredictions, recentGames, playerProps } = useOutletContext<SkaterData>();
   if (!gamePredictions || !recentGames) {
     return (
       <div className="bg-white rounded-2xl shadow-lg shadow-slate-200/50 p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -43,6 +44,14 @@ export const SkaterPredictionPanel = () => {
           subtext={`Prob: ${(gamePredictions.prob_point * 100).toFixed(0)}%`}
         />
       </div>
+
+      {playerProps.length > 0 && (
+        <div className={`grid grid-cols-2`}>
+          {playerProps.map((prop, index) => (
+            <PlayerPropCard key={index} {...prop} />
+          ))}
+        </div>
+      )}
 
       <div className="bg-white rounded-2xl shadow-lg shadow-slate-200/50 p-5 space-y-4">
         <p className="text-xs font-semibold tracking-widest text-slate-400 uppercase">

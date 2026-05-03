@@ -1,4 +1,4 @@
-import type { PlayerData } from "./player";
+import type { PlayerData, PlayerPropData } from "./player";
 
 export interface GoalieGamePredictions {
   saves: number;
@@ -24,6 +24,7 @@ export interface GoalieData extends PlayerData {
   gamePredictions: GoalieGamePredictions;
   seasonStats: GoalieSeasonStats;
   recentGames: GoalieGameStats[];
+  playerProps: PlayerPropData[];
 }
 
 export interface GoalieGameRowProps {

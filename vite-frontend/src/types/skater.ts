@@ -1,4 +1,4 @@
-import type { PlayerData } from "./player";
+import type { PlayerData, PlayerPropData } from "./player";
 
 export interface SkaterGamePredictions {
   goals: number;
@@ -29,6 +29,7 @@ export interface SkaterData extends PlayerData {
   gamePredictions: SkaterGamePredictions;
   seasonStats: SkaterSeasonStats;
   recentGames: SkaterGameStats[];
+  playerProps: PlayerPropData[];
 }
 
 export interface SkaterGameRowProps {

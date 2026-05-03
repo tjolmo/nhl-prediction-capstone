@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { getGoalieSeasonStats, getGoalieRecentGames, getGoaliePredictions } from "../api/goalie";
-import { getPlayerBasicInfo, getPlayerUpcomingGame } from "../api/player";
+import { getPlayerBasicInfo, getPlayerProps, getPlayerUpcomingGame } from "../api/player";
 import type { GoalieData } from "../types/goalie";
 
 export function useGoalie(id: number) {
@@ -15,14 +15,16 @@ export function useGoalie(id: number) {
       getGoalieSeasonStats(id).catch(() => null),
       getGoalieRecentGames(id).catch(() => null),
       getGoaliePredictions(id).catch(() => null),
+      getPlayerProps(id)
     ])
-      .then(([playerInfo, upcomingGame, seasonStats, recentGames, gamePredictions]) => {
+      .then(([playerInfo, upcomingGame, seasonStats, recentGames, gamePredictions, playerProps]) => {
         setData({
           ...playerInfo,
           upcomingGame: upcomingGame!,
           gamePredictions: gamePredictions!,
           seasonStats: seasonStats!,
           recentGames: recentGames!,
+          playerProps: playerProps,
         });
       })
       .catch(setError)
