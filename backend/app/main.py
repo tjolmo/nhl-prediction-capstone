@@ -1,3 +1,4 @@
+from app.schedules import train_models
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
@@ -6,7 +7,7 @@ from .routers import teams_router, player_router
 from .database import AsyncSessionLocal
 from .schedules import (add_current_teams_to_db, add_old_teams_to_db, fetch_current_rosters_for_all_teams, 
                         fetch_current_schedules_for_all_teams, fetch_all_season_schedules_for_all_teams, update_daily_features, scrape_all_player_logs,
-                        fetch_current_scores)
+                        fetch_current_scores, fetch_current_player_props)
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 @asynccontextmanager
@@ -19,16 +20,21 @@ async def lifespan(app: FastAPI):
         #await scrape_all_player_logs([2025, 2024, 2023, 2022, 2021])
         #await scrape_all_player_logs([2025])
         #await update_daily_features()
+        #await train_models()
         #await add_current_teams_to_db()
         #await add_old_teams_to_db()
         #await fetch_all_season_schedules_for_all_teams()
-
+        
         # scheduled refreshes at 3 am
         scheduler = AsyncIOScheduler()
         scheduler.add_job(fetch_current_schedules_for_all_teams,trigger="cron",hour=3)
         scheduler.add_job(fetch_current_rosters_for_all_teams,trigger="cron",hour=3)
         scheduler.add_job(scrape_all_player_logs, args=[[2025]], trigger="cron",hour=3)
         scheduler.add_job(fetch_current_scores, trigger="interval", minutes=10)
+        scheduler.add_job(fetch_current_player_props, trigger="cron", hour=3)
+        scheduler.add_job(update_daily_features, trigger="cron", hour=3, minutes=30)
+        scheduler.add_job(train_models, trigger="cron", hour=4)
+
         scheduler.start() 
         
 
