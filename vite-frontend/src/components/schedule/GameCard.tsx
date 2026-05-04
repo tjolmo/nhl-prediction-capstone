@@ -8,6 +8,8 @@ interface GameCardProps {
 }
 
 export const GameCard: FC<GameCardProps> = ({ game, index }) => {
+  const scoresExist = game.awayScore !== null && game.homeScore !== null;
+
   return (
     <div
       className={`relative overflow-hidden rounded-2xl bg-white shadow-lg shadow-slate-200/50 transition-all duration-300 hover:shadow-xl hover:shadow-blue-100/60 hover:-translate-y-0.5 ${game.isNextGame ? "ring-2 ring-blue-500 ring-offset-2" : ""
@@ -43,22 +45,65 @@ export const GameCard: FC<GameCardProps> = ({ game, index }) => {
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
-            <span className="text-3xl sm:text-4xl font-black text-slate-800 tabular-nums">
-              {game.predictedScore.away}
-            </span>
+            <div className="flex flex-col items-center">
+              {scoresExist ? (
+                <span className="text-3xl sm:text-4xl font-black text-slate-800 tabular-nums">
+                  {game.awayScore}
+                </span>
+              ) : game.predictions && game.predictions.away.prob_win !== null && (
+                <>
+                  <span className="text-3xl sm:text-4xl font-black text-slate-800 tabular-nums">
+                    {(game.predictions.away.prob_win * 100).toFixed(0)}%
+                  </span>
+                  <span className="text-[11px] font-bold text-blue-500 mt-0.5 tabular-nums">
+                    {game.moneyline?.away}
+                  </span>
+                </>
+              )}
+            </div>
             <div className="flex flex-col items-center gap-0.5">
               <div className="w-1 h-1 rounded-full bg-slate-300" />
               <div className="w-1 h-1 rounded-full bg-slate-300" />
             </div>
-            <span className="text-3xl sm:text-4xl font-black text-slate-800 tabular-nums">
-              {game.predictedScore.home}
-            </span>
+            <div className="flex flex-col items-center">
+              {scoresExist ? (
+                <span className="text-3xl sm:text-4xl font-black text-slate-800 tabular-nums">
+                  {game.homeScore}
+                </span>
+              ) : game.predictions && game.predictions.home.prob_win !== null && (
+                <>
+                  <span className="text-3xl sm:text-4xl font-black text-slate-800 tabular-nums">
+                    {(game.predictions.home.prob_win * 100).toFixed(0)}%
+                  </span>
+                  <span className="text-[11px] font-bold text-blue-500 mt-0.5 tabular-nums">
+                    {game.moneyline?.home}
+                  </span>
+                </>
+              )}
+            </div>
           </div>
 
-          <p className="text-[10px] font-semibold tracking-widest text-slate-400 uppercase">
-            Predicted Final
-          </p>
-
+          {scoresExist ?
+            game.gameState === "LIVE" ? (
+              <p className="text-[10px] font-semibold tracking-widest text-slate-400 uppercase">
+                Game in Progress
+              </p>
+            ) : (
+              <p className="text-[10px] font-semibold tracking-widest text-slate-400 uppercase">
+                Final Score
+              </p>
+            ) : (
+              <p className="text-[10px] font-semibold tracking-widest text-slate-400 uppercase">
+                Predicted Win Probability
+              </p>
+            )}
+          {game.moneyline && !scoresExist && (
+            <>
+              <p className="text-[10px] font-semibold tracking-widest text-slate-400 uppercase">
+                Current Vegas Moneyline
+              </p>
+            </>
+          )}
           <p className="text-xs text-slate-500 font-medium text-center leading-snug">
             📍 {game.venue}
           </p>

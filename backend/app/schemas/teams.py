@@ -26,9 +26,13 @@ class TeamScheduledGameInfoOut(BaseModel):
     date: str
     homeTeam: TeamBasicInfoOut
     awayTeam: TeamBasicInfoOut
-    predictedScore: dict = {"home": 0, "away": 0} # temporary until model
+    awayScore: int | None
+    homeScore: int | None
     time: datetime.datetime
     venue: str
+    gameState: str
+    predictions: TeamGamePredictionOut | None
+    moneyline: TeamMoneylineOut | None
     isNextGame: bool
 
 class TeamRosteredPlayer(BaseModel):
@@ -47,3 +51,18 @@ class TeamSearchResultOut(BaseModel):
     name: str
     tricode: str
     logoUrl: str | None
+
+class TeamSidePrediction(BaseModel):
+    """Prediction details for one side (home or away) of a game"""
+    tri_code: str
+    prob_win: float
+
+class TeamGamePredictionOut(BaseModel):
+    """Output model for game-level predictions (both teams)"""
+    home: TeamSidePrediction
+    away: TeamSidePrediction
+
+class TeamMoneylineOut(BaseModel):
+    """Output model for game-level moneyline predictions (both teams)"""
+    home: int
+    away: int

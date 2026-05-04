@@ -16,7 +16,11 @@ export interface TeamScheduledGame {
   venue: string;
   awayTeam: Team;
   homeTeam: Team;
-  predictedScore: PredictedScore;
+  awayScore: number | null;
+  homeScore: number | null;
+  gameState: string | null;
+  predictions?: TeamGamePrediction;
+  moneyline?: TeamMoneyline;
   isNextGame?: boolean;
 }
 
@@ -24,4 +28,19 @@ export interface SearchTeamResult {
   name: string;
   tricode: string;
   logoUrl: string | null;
+}
+
+export interface TeamPredictionSide {
+  tri_code: string;
+  prob_win: number;
+}
+
+export interface TeamGamePrediction {
+  home: TeamPredictionSide;
+  away: TeamPredictionSide;
+}
+
+export interface TeamMoneyline {
+  home: number;
+  away: number;
 }

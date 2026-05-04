@@ -8,12 +8,8 @@ export function useDateGames(date: string) {
     const [error, setError] = useState<Error | null>(null);
 
     useEffect(() => {
-        Promise.all([
-            getGamesByDate(date)
-        ])
-            .then(([nextGames]) => {
-                setData(nextGames);
-            })
+        getGamesByDate(date)
+            .then(setData)
             .catch(setError)
             .finally(() => setLoading(false));
     }, [date]);
