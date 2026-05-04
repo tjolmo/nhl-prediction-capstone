@@ -14,13 +14,14 @@ from .config import (
     skater_clf_model_path,
     GOALIE_FEATURE_COLUMNS,
     GOALIE_TARGET_COLUMNS,
-    GOALIE_CLF_TARGET_COLUMNS,
     GOALIE_XGB_PARAMS,
-    GOALIE_XGB_CLF_PARAMS,
     goalie_model_path,
-    goalie_clf_model_path,
+    TEAM_FEATURE_COLUMNS,
+    TEAM_CLF_TARGET_COLUMNS,
+    TEAM_XGB_CLF_PARAMS,
+    team_clf_model_path,
 )
-from .data import load_skater_training_data, load_goalie_training_data
+from .data import load_skater_training_data, load_goalie_training_data, load_team_training_data
 
 async def train_skater_models(session: AsyncSession) -> dict[str, float]:
     df = await load_skater_training_data(session)
@@ -125,28 +126,42 @@ async def train_goalie_models(session: AsyncSession) -> dict[str, float]:
         print(f"  {target:>20s}  MAE={mae:.4f}  → saved to {path}")
     return results
 
-async def train_goalie_classifiers(session: AsyncSession) -> dict[str, dict]:
-    df = await load_goalie_training_data(session)
+async def train_team_classifiers(session: AsyncSession) -> dict[str, dict]:
+    df = await load_team_training_data(session)
     if df.empty:
-        print("No training data found.  Make sure GoalieGameFeatures and "
-              "GoalieGameLog are populated.")
+        print("No training data found.  Make sure TeamGameLog and "
+              "TeamGameFeatures are populated.")
         return {}
 
-    X = df[GOALIE_FEATURE_COLUMNS].astype(np.float32)
+    df_home = df[df["is_home"] == 1].reset_index(drop=True)
+    print(f"  Home-perspective rows for classifier: {len(df_home)} "
+          f"(total rows with opponent features: {len(df)})")
+
+    if df_home.empty:
+        print("  WARNING: No home-team rows found after filtering. "
+              "This usually means the self-join found no games where both teams "
+              "have 5-game rolling features, OR home_away values differ from 'H'.\n"
+              "  Falling back to all rows (label = goals > goals_against).")
+        df_home = df.reset_index(drop=True)
+
+    if df_home.empty:
+        print("  No training data available for team classifier. Skipping.")
+        return {}
+
+    X = df_home[TEAM_FEATURE_COLUMNS].astype(np.float32)
     results: dict[str, dict] = {}
 
     X_train, X_val, idx_train, idx_val = train_test_split(
-        X, df.index, test_size=0.2, random_state=42
+        X, df_home.index, test_size=0.2, random_state=42
     )
     binary_targets = {
-        "shutout":       (df["goals_against"] == 0).astype(np.int32),
-        "quality_start": (df["goals_against"] <= 2).astype(np.int32),
+        "win": (df_home["goals"] > df_home["goals_against"]).astype(np.int32),
     }
-    for target in GOALIE_CLF_TARGET_COLUMNS:
+    for target in TEAM_CLF_TARGET_COLUMNS:
         y = binary_targets[target]
         y_train, y_val = y.iloc[idx_train], y.iloc[idx_val]
 
-        model = XGBClassifier(**GOALIE_XGB_CLF_PARAMS)
+        model = XGBClassifier(**TEAM_XGB_CLF_PARAMS)
         model.fit(
             X_train, y_train,
             eval_set=[(X_val, y_val)],
@@ -164,9 +179,10 @@ async def train_goalie_classifiers(session: AsyncSession) -> dict[str, dict]:
             "pos_rate": round(float(pos_rate), 4),
         }
 
-        path = goalie_clf_model_path(target)
+        path = team_clf_model_path(target)
         joblib.dump(model, path)
         print(f"  {target + '_clf':>20s}  logloss={ll:.4f}  AUC={auc:.4f}  "
               f"pos_rate={pos_rate:.2%}  → saved to {path}")
 
     return results
+

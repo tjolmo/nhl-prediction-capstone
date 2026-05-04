@@ -1,3 +1,4 @@
+from predictions.train import train_team_classifiers, train_goalie_models, train_skater_classifiers, train_skater_models
 from app.crud.props import upsert_player_props
 from app.schemas.player import PlayerPropOut
 from app.crud.players import get_player_by_name_and_roster_options
@@ -17,6 +18,8 @@ from .crud.players import get_players_not_in_db, upsert_scraped_player, set_all_
 from .crud.skater_game_logs import upsert_scraped_game_logs
 from .crud.goalie_game_logs import upsert_scraped_goalie_game_logs
 from app.database import AsyncSessionLocal
+from app.crud.team_game_logs import build_team_game_logs
+from app.crud.team_game_features import update_team_game_features
 import datetime
 
 CURRENT_TEAMS = [
@@ -114,6 +117,8 @@ async def update_daily_features():
     async with AsyncSessionLocal() as db:
         await update_skater_game_features(db)
         await update_goalie_game_features(db)
+        await build_team_game_logs(db)
+        await update_team_game_features(db)
 
 async def scrape_all_player_logs(seasons:list[int]):
     async with AsyncSessionLocal() as db:
@@ -210,3 +215,9 @@ async def fetch_current_player_props():
                     seen[key] = prop
                 await upsert_player_props(db, list(seen.values()))
                 
+async def train_models():
+    async with AsyncSessionLocal() as db:
+        await train_skater_models(db)
+        await train_skater_classifiers(db)
+        await train_goalie_models(db)
+        await train_team_classifiers(db)
