@@ -19,13 +19,13 @@ export default function App() {
       <Route path="/" element={<Navigate to="/schedule/today" />} />
 
       <Route path="/player/:id" element={<SkaterDashboard />}>
-        <Route index element={<Navigate to="predictions" />} />
+        <Route index element={<Navigate to="predictions" replace />} />
         <Route path="predictions" element={<SkaterPredictionPanel />} />
         <Route path="recent" element={<SkaterRecentGames />} />
       </Route>
 
       <Route path="/goalie/:id" element={<GoalieDashboard />}>
-        <Route index element={<Navigate to="predictions" />} />
+        <Route index element={<Navigate to="predictions" replace />} />
         <Route path="predictions" element={<GoaliePredictionPanel />} />
         <Route path="recent" element={<GoalieRecentGames />} />
       </Route>
