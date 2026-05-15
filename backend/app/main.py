@@ -17,8 +17,11 @@ async def lifespan(app: FastAPI):
         print("Connected to Postgres")
         await add_current_teams_to_db()
         await add_old_teams_to_db()
-        await fetch_all_season_schedules_for_all_teams()
-        await scrape_all_player_logs([2025, 2024, 2023, 2022, 2021])
+        await fetch_current_schedules_for_all_teams()
+        await fetch_current_rosters_for_all_teams()
+        await scrape_all_player_logs([2025])
+        await update_daily_features()
+        await train_models()
 
         scheduler = AsyncIOScheduler()
         scheduler.add_job(fetch_current_schedules_for_all_teams,trigger="cron",hour=3)

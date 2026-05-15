@@ -152,7 +152,7 @@ class GoalieGameFeatures(Base):
 
 class TeamGameLog(Base):
     __tablename__ = "team_game_logs"
-    game_id: Mapped[int] = mapped_column(ForeignKey("games.id"), primary_key=True)
+    game_id: Mapped[int] = mapped_column(primary_key=True)
     team_tri_code: Mapped[str] = mapped_column(ForeignKey("teams.tri_code"), primary_key=True)
     opposing_team_tri_code: Mapped[str] = mapped_column(ForeignKey("teams.tri_code"), nullable=False)
     season: Mapped[int] = mapped_column(nullable=False)
