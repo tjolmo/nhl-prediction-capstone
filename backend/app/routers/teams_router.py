@@ -135,7 +135,8 @@ async def get_all_games_from_date(db = Depends(get_db), date: str="today"):
             if prediction is None:
                 prob_home_win = None
                 prob_away_win = None
-            prob_home_win, prob_away_win = prediction
+            else:
+                prob_home_win, prob_away_win = prediction
 
 
         game_info = TeamScheduledGameInfoOut(
