@@ -3,6 +3,11 @@ services:
     image: postgres:15
     container_name: postgres_db
     restart: always
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -16,13 +21,14 @@ services:
     build: ./backend
     container_name: fastapi_backend
     restart: always
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir /app
+    command: sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir /app"
     volumes:
       - ./backend:/app
     ports:
       - "8000:8000"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     environment:
       DATABASE_URL: ${DATABASE_URL}
       ODDS_API_KEY: ${ODDS_API_KEY}
