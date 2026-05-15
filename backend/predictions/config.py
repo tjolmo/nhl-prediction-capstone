@@ -15,7 +15,7 @@ SKATER_FEATURE_COLUMNS = [
 SKATER_TARGET_COLUMNS = ["points", "goals", "primary_assists", "secondary_assists"]
 SKATER_CLF_TARGET_COLUMNS = ["goals", "assists", "points"]
 SKATER_MODEL_DIR = Path(__file__).parent / "models/skater"
-SKATER_MODEL_DIR.mkdir(exist_ok=True)
+SKATER_MODEL_DIR.mkdir(exist_ok=True, parents=True)
 
 def skater_model_path(target: str) -> Path:
     return SKATER_MODEL_DIR / f"{target}.joblib"
@@ -75,7 +75,7 @@ GOALIE_FEATURE_COLUMNS = [
 ]
 GOALIE_TARGET_COLUMNS = ["goals_against", "sog"]
 GOALIE_MODEL_DIR = Path(__file__).parent / "models/goalie"
-GOALIE_MODEL_DIR.mkdir(exist_ok=True)
+GOALIE_MODEL_DIR.mkdir(exist_ok=True, parents=True)
 
 def goalie_model_path(target: str) -> Path:
     return GOALIE_MODEL_DIR / f"goalie_{target}.joblib"
@@ -113,7 +113,7 @@ TEAM_FEATURE_COLUMNS = TEAM_FEATURE_COLUMNS_SINGLE + ["is_home"] + TEAM_OPP_FEAT
 TEAM_CLF_TARGET_COLUMNS = ["win"]
 
 TEAM_MODEL_DIR = Path(__file__).parent / "models/team"
-TEAM_MODEL_DIR.mkdir(exist_ok=True)
+TEAM_MODEL_DIR.mkdir(exist_ok=True, parents=True)
 
 def team_clf_model_path(target: str) -> Path:
     return TEAM_MODEL_DIR / f"team_{target}_clf.joblib"
